@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"github.com/gin-gonic/gin"
 	"log"
+	"net/http"
 	"suning/model"
 	"suning/service"
 	"suning/util"
@@ -68,5 +69,22 @@ func Login(c *gin.Context) {
 	}
 	util.RespOK(c)
 	//设置cookie
-	c.SetCookie("if_login", "true", 3600, "/", "localhost", false, true)
+	c.SetCookie("username", username, 3600, "/", "localhost", false, true)
+}
+
+func Logout(c *gin.Context) {
+	//检测是否登录
+	username, err := c.Cookie("username")
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "You are not logged in"})
+		return
+	}
+	if username == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "You are not logged in"})
+		return
+	}
+
+	//清除登陆状态cookie
+	c.SetCookie("username", "", -1, "/", "localhost", false, true)
+	util.RespOK(c)
 }

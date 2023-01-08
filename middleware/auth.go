@@ -2,19 +2,25 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
-func Auth(c *gin.Context) {
-	// 从 cookie 中获取登录状态
-	ifLogin, err := c.Cookie("if_login")
-	if err != nil {
-		ifLogin = "false"
+func Auth() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Check if the user is logged in
+		username, err := c.Cookie("username")
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "You are not logged in"})
+			c.Abort()
+			return
+		}
+		if username == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "You are not logged in"})
+			c.Abort()
+			return
+		}
+
+		// The user is logged in, proceed to the route handler
+		c.Next()
 	}
-	// 用户未登录
-	if ifLogin != "true" {
-		c.Abort()
-		return
-	}
-	// 继续执行后续的处理函数
-	c.Next()
 }

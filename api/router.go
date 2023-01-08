@@ -7,12 +7,13 @@ import (
 
 func InitRouter() {
 	r := gin.Default()
-	r.Use(middleware.Cors)
+	r.Use(middleware.Cors())
 	u := r.Group("/user")
 	{
 		u.POST("/register", Register)
 		u.POST("/login", Login)
+		u.POST("/logout", middleware.Auth(), Logout)
 	}
-	r.Use(middleware.Auth)
+
 	r.Run()
 }
