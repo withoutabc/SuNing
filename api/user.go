@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"github.com/gin-gonic/gin"
 	"log"
-	"net/http"
 	"suning/model"
 	"suning/service"
 	"suning/util"
@@ -13,8 +12,9 @@ import (
 func Register(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
+	confPassword := c.Query("confirmPassword")
 	//判断是否有效输入
-	if username == "" || password == "" {
+	if username == "" || password == "" || confPassword == "" {
 		util.RespParamErr(c)
 		return
 	}
@@ -30,10 +30,23 @@ func Register(c *gin.Context) {
 		util.NormErr(c, 300, "user has existed")
 		return
 	}
+	//两次密码是否一致
+	if confPassword != password {
+		util.NormErr(c, 300, "different password")
+		return
+	}
 	//用户信息写入数据库
 	err = service.CreateUser(model.User{
 		Username: username,
 		Password: password,
+	})
+	if err != nil {
+		util.RespInternalErr(c)
+		return
+	}
+	err = service.CreateAccount(model.Account{
+		Username: username,
+		Balance:  0,
 	})
 	if err != nil {
 		util.RespInternalErr(c)
@@ -76,14 +89,13 @@ func Logout(c *gin.Context) {
 	//检测是否登录
 	username, err := c.Cookie("username")
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "You are not logged in"})
+		util.RespUnauthorizedErr(c)
 		return
 	}
 	if username == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "You are not logged in"})
+		util.RespUnauthorizedErr(c)
 		return
 	}
-
 	//清除登陆状态cookie
 	c.SetCookie("username", "", -1, "/", "localhost", false, true)
 	util.RespOK(c)

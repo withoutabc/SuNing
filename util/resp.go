@@ -8,14 +8,11 @@ import (
 type respTemplate struct {
 	Status int    `json:"status"`
 	Info   string `json:"info"`
-	Data   struct {
-	} `json:"data"`
 }
 
 var OK = respTemplate{
 	Status: 200,
 	Info:   "success",
-	Data:   struct{}{},
 }
 
 func RespOK(c *gin.Context) {
@@ -25,7 +22,6 @@ func RespOK(c *gin.Context) {
 var ParamError = respTemplate{
 	Status: 400,
 	Info:   "params error",
-	Data:   struct{}{},
 }
 
 func RespParamErr(c *gin.Context) {
@@ -35,13 +31,20 @@ func RespParamErr(c *gin.Context) {
 var InternalErr = respTemplate{
 	Status: 500,
 	Info:   "internal error",
-	Data:   struct{}{},
 }
 
 func RespInternalErr(c *gin.Context) {
 	c.JSON(http.StatusInternalServerError, InternalErr)
 }
 
+var UnauthorizedErr = respTemplate{
+	Status: 401,
+	Info:   "unauthorized",
+}
+
+func RespUnauthorizedErr(c *gin.Context) {
+	c.JSON(http.StatusUnauthorized, UnauthorizedErr)
+}
 func NormErr(c *gin.Context, status int, info string) {
 	c.JSON(http.StatusBadRequest, gin.H{
 		"status": status,
