@@ -12,12 +12,15 @@ func InitRouter() {
 	{
 		u.POST("/register", Register)
 		u.POST("/login", Login)
-		u.POST("/logout", middleware.RefreshCookieMiddleware(), middleware.Auth(), Logout)
+		u.GET("/refresh", middleware.Auth(), Refresh)
+		u.POST("/logout", middleware.Auth(), Logout)
 	}
 	p := r.Group("/person")
 	{
-		p.GET("/balance", middleware.RefreshCookieMiddleware(), middleware.Auth(), ViewBalance)
-		p.POST("/recharge", middleware.RefreshCookieMiddleware(), middleware.Auth(), Recharge)
+		p.GET("/balance", middleware.Auth(), ViewBalance)
+		p.POST("/recharge", middleware.Auth(), Recharge)
+		p.GET("/information", middleware.Auth(), ViewInformation)
+		p.PUT("/modify", middleware.Auth(), ChangeInformation)
 	}
 	r.Run()
 }

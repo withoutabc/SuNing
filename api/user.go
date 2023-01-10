@@ -7,12 +7,13 @@ import (
 	"suning/model"
 	"suning/service"
 	"suning/util"
+	"time"
 )
 
 func Register(c *gin.Context) {
-	username := c.Query("username")
-	password := c.Query("password")
-	confPassword := c.Query("confirmPassword")
+	username := c.PostForm("username")
+	password := c.PostForm("password")
+	confPassword := c.PostForm("confirmPassword")
 	//判断是否有效输入
 	if username == "" || password == "" || confPassword == "" {
 		util.RespParamErr(c)
@@ -52,18 +53,24 @@ func Register(c *gin.Context) {
 		util.RespInternalErr(c)
 		return
 	}
+	err = service.CreateInformation(username)
+	if err != nil {
+		log.Printf("%v", err)
+		util.RespInternalErr(c)
+		return
+	}
 	util.RespOK(c)
 }
 
 func Login(c *gin.Context) {
-	username := c.Query("username")
-	password := c.Query("password")
+	username := c.PostForm("username")
+	password := c.PostForm("password")
 	//有效输入
 	if username == " " || password == "" {
 		util.RespParamErr(c)
 		return
 	}
-	//检索用户处理
+	//查找用户
 	u, err := service.SearchUserByUsername(username)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -99,4 +106,24 @@ func Logout(c *gin.Context) {
 	//清除登陆状态cookie
 	c.SetCookie("username", "", -1, "/", "localhost", false, true)
 	util.RespOK(c)
+}
+
+func Refresh(c *gin.Context) {
+	//判断cookie过没过期
+	username, err := c.Cookie("username")
+	if err != nil {
+		util.RespUnauthorizedErr(c)
+		c.Abort()
+		return
+	}
+	if username == "" {
+		util.RespUnauthorizedErr(c)
+		c.Abort()
+		return
+	}
+	//没过期
+	c.Next()
+	// 设置新的cookie
+	expiration := time.Now().Add(time.Hour)
+	c.SetCookie("username", username, int(expiration.Unix()), "/", "localhost", false, true)
 }

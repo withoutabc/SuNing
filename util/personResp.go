@@ -3,20 +3,21 @@ package util
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"suning/model"
 )
 
-func ViewBalance(c *gin.Context, status int, info string, username string, balance int) {
-	type Data struct {
-		Username string `json:"username"`
-		Balance  int    `json:"balance"`
-	}
-	var data = Data{
-		Username: username,
-		Balance:  balance,
-	}
+func ViewBalance(c *gin.Context, status int, info string, a model.Account) {
 	c.JSON(http.StatusOK, gin.H{
 		"status": status,
 		"info":   info,
-		"data":   data,
+		"data":   a,
+	})
+}
+
+func ViewInformation(c *gin.Context, status int, info string, i model.Information) {
+	c.JSON(http.StatusOK, gin.H{
+		"status": status,
+		"info":   info,
+		"data":   i,
 	})
 }
