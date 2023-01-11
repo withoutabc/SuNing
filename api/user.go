@@ -108,7 +108,7 @@ func Logout(c *gin.Context) {
 	util.RespOK(c)
 }
 
-func Refresh(c *gin.Context) {
+func UserRefresh(c *gin.Context) {
 	//判断cookie过没过期
 	username, err := c.Cookie("username")
 	if err != nil {
@@ -126,4 +126,5 @@ func Refresh(c *gin.Context) {
 	// 设置新的cookie
 	expiration := time.Now().Add(time.Hour)
 	c.SetCookie("username", username, int(expiration.Unix()), "/", "localhost", false, true)
+	util.RespOK(c)
 }

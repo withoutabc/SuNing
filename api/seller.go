@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
 	"suning/model"
@@ -11,23 +12,23 @@ import (
 )
 
 func BackRegister(c *gin.Context) {
-	sellerName := c.PostForm("sellerName")
+	seller := c.PostForm("seller")
 	password := c.PostForm("password")
 	confPassword := c.PostForm("confirmPassword")
 	//判断是否有效输入
-	if sellerName == "" || password == "" || confPassword == "" {
+	if seller == "" || password == "" || confPassword == "" {
 		util.RespParamErr(c)
 		return
 	}
 	//检索数据库
-	u, err := service.SearchSellerByName(sellerName)
+	u, err := service.SearchSellerByName(seller)
 	if err != nil && err != sql.ErrNoRows {
 		log.Printf("search seller error:%v", err)
 		util.RespInternalErr(c)
 		return
 	}
 	//用户是否存在
-	if u.SellerName != "" {
+	if u.Seller != "" {
 		util.NormErr(c, 300, "seller has existed")
 		return
 	}
@@ -38,8 +39,8 @@ func BackRegister(c *gin.Context) {
 	}
 	//用户信息写入数据库
 	err = service.CreateSeller(model.Seller{
-		SellerName: sellerName,
-		Password:   password,
+		Seller:   seller,
+		Password: password,
 	})
 	if err != nil {
 		util.RespInternalErr(c)
@@ -49,15 +50,15 @@ func BackRegister(c *gin.Context) {
 }
 
 func BackLogin(c *gin.Context) {
-	sellerName := c.PostForm("sellerName")
+	seller := c.PostForm("seller")
 	password := c.PostForm("password")
 	//有效输入
-	if sellerName == " " || password == "" {
+	if seller == " " || password == "" {
 		util.RespParamErr(c)
 		return
 	}
 	//查找用户
-	u, err := service.SearchSellerByName(sellerName)
+	u, err := service.SearchSellerByName(seller)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			util.NormErr(c, 300, "user don't exist")
@@ -75,34 +76,34 @@ func BackLogin(c *gin.Context) {
 	}
 	util.RespOK(c)
 	//设置cookie
-	c.SetCookie("sellerName", sellerName, 3600, "/", "localhost", false, true)
+	c.SetCookie("seller", seller, 3600, "/", "localhost", false, true)
 }
 
 func BackLogout(c *gin.Context) {
 	//检测是否登录
-	sellerName, err := c.Cookie("sellerName")
+	seller, err := c.Cookie("seller")
 	if err != nil {
 		util.RespUnauthorizedErr(c)
 		return
 	}
-	if sellerName == "" {
+	if seller == "" {
 		util.RespUnauthorizedErr(c)
 		return
 	}
 	//清除登陆状态cookie
-	c.SetCookie("sellerName", "", -1, "/", "localhost", false, true)
+	c.SetCookie("seller", "", -1, "/", "localhost", false, true)
 	util.RespOK(c)
 }
 
 func BackRefresh(c *gin.Context) {
 	//判断cookie过没过期
-	sellerName, err := c.Cookie("sellerName")
+	seller, err := c.Cookie("seller")
 	if err != nil {
 		util.RespUnauthorizedErr(c)
 		c.Abort()
 		return
 	}
-	if sellerName == "" {
+	if seller == "" {
 		util.RespUnauthorizedErr(c)
 		c.Abort()
 		return
@@ -111,21 +112,159 @@ func BackRefresh(c *gin.Context) {
 	c.Next()
 	// 设置新的cookie
 	expiration := time.Now().Add(time.Hour)
-	c.SetCookie("sellerName", sellerName, int(expiration.Unix()), "/", "localhost", false, true)
+	c.SetCookie("seller", seller, int(expiration.Unix()), "/", "localhost", false, true)
+	util.RespOK(c)
 }
 
 func ViewProduct(c *gin.Context) {
-
+	//获取卖家名称
+	seller, err := c.Cookie("seller")
+	if err != nil {
+		util.RespUnauthorizedErr(c)
+		return
+	}
+	if seller == "" {
+		util.RespUnauthorizedErr(c)
+		return
+	}
+	//查询卖家的商品
+	var products []model.Product
+	products, err = service.SearchNameBySeller(seller)
+	util.ViewProducts(c, "view product successfully", products)
 }
 
 func AddProduct(c *gin.Context) {
-
+	//获取卖家名称
+	seller, err := c.Cookie("seller")
+	if err != nil {
+		util.RespUnauthorizedErr(c)
+		return
+	}
+	if seller == "" {
+		util.RespUnauthorizedErr(c)
+		return
+	}
+	//获取商品信息
+	p := model.Product{
+		Seller:   seller,
+		Name:     c.PostForm("name"),
+		Price:    c.PostForm("price"),
+		Sales:    c.PostForm("sales"),
+		Rating:   c.PostForm("rating"),
+		Category: c.PostForm("category"),
+		Image:    c.PostForm("image"),
+	}
+	if p.Name == "" || p.Price == "" || p.Sales == "" || p.Rating == "" || p.Category == "" {
+		util.RespParamErr(c)
+		return
+	}
+	//同一商家的商品名不可重复
+	var products []model.Product
+	products, err = service.SearchNameBySeller(seller)
+	for _, product := range products {
+		if product.Name == p.Name {
+			util.NormErr(c, 400, "product has existed")
+			return
+		}
+	}
+	//插入商品信息
+	err = service.AddProduct(p)
+	if err != nil {
+		fmt.Printf("add product:%v", err)
+		util.RespInternalErr(c)
+		return
+	}
+	util.RespOK(c)
 }
 
 func UpdateProduct(c *gin.Context) {
-
+	//获取卖家名称
+	seller, err := c.Cookie("seller")
+	if err != nil {
+		util.RespUnauthorizedErr(c)
+		return
+	}
+	if seller == "" {
+		util.RespUnauthorizedErr(c)
+		return
+	}
+	//获取要修改的数据
+	p := model.Product{
+		Seller:   seller,
+		Name:     c.PostForm("name"),
+		Price:    c.PostForm("price"),
+		Sales:    c.PostForm("sales"),
+		Rating:   c.PostForm("rating"),
+		Category: c.PostForm("category"),
+		Image:    c.PostForm("image"),
+	}
+	//判断name是否写了
+	if p.Name == "" {
+		util.NormErr(c, 400, "unknown name")
+		return
+	}
+	//判断name是否存在
+	var products []model.Product
+	var count int
+	products, err = service.SearchNameBySeller(seller)
+	for _, product := range products {
+		if product.Name == p.Name {
+			count = 1
+			break
+		}
+	}
+	if count != 1 {
+		util.NormErr(c, 400, "product not exist")
+		return
+	}
+	//判断是否有修改
+	if p.Price == "" && p.Sales == "" && p.Rating == "" && p.Category == "" && p.Image == "" {
+		util.NormErr(c, 400, "fail to update")
+		return
+	}
+	//修改数据
+	err = service.UpdateProduct(p)
+	if err != nil {
+		log.Printf("update product err:%v", err)
+		util.RespInternalErr(c)
+		return
+	}
+	util.RespOK(c)
 }
 
 func DeleteProduct(c *gin.Context) {
-
+	//获取卖家名称
+	seller, err := c.Cookie("seller")
+	if err != nil {
+		util.RespUnauthorizedErr(c)
+		return
+	}
+	if seller == "" {
+		util.RespUnauthorizedErr(c)
+		return
+	}
+	//获取要删除的商品名称
+	name := c.Query("name")
+	//判断name是否存在
+	var products []model.Product
+	var count int
+	products, err = service.SearchNameBySeller(seller)
+	for _, product := range products {
+		if product.Name == name {
+			count = 1
+			break
+		}
+	}
+	if count != 1 {
+		util.NormErr(c, 400, "product not exist")
+		return
+	}
+	//删除商品
+	err = service.DeleteProduct(seller, name)
+	if err != nil {
+		log.Printf("delete product err:%v", err)
+		util.RespInternalErr(c)
+		return
+	}
+	util.RespOK(c)
 }

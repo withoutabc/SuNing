@@ -29,7 +29,7 @@ func ViewBalance(c *gin.Context) {
 		util.RespInternalErr(c)
 		return
 	}
-	util.ViewBalance(c, 200, "view balance successfully", a)
+	util.ViewBalance(c, "view balance successfully", a)
 }
 
 func Recharge(c *gin.Context) {
@@ -74,7 +74,7 @@ func Recharge(c *gin.Context) {
 		Username: username,
 		Balance:  accounted,
 	}
-	util.ViewBalance(c, 200, "recharge successfully", a)
+	util.ViewBalance(c, "recharge successfully", a)
 }
 
 func ViewInformation(c *gin.Context) {
@@ -96,7 +96,7 @@ func ViewInformation(c *gin.Context) {
 		util.RespInternalErr(c)
 		return
 	}
-	util.ViewInformation(c, 200, "view information successfully", i)
+	util.ViewInformation(c, "view information successfully", i)
 }
 
 func ChangeInformation(c *gin.Context) {
@@ -162,12 +162,12 @@ func ChangeInformation(c *gin.Context) {
 		util.RespInternalErr(c)
 		return
 	}
-	//查询数据库
-	i, err = service.SearchInformationByUsername(username)
-	if err != nil && err != sql.ErrNoRows {
-		log.Printf("search information error:%v", err)
-		util.RespInternalErr(c)
-		return
-	}
-	util.ViewInformation(c, 200, "change information successfully", i)
+	////查询数据库
+	//i, err = service.SearchInformationByUsername(username)
+	//if err != nil && err != sql.ErrNoRows {
+	//	log.Printf("search information error:%v", err)
+	//	util.RespInternalErr(c)
+	//	return
+	//}
+	util.RespOK(c)
 }

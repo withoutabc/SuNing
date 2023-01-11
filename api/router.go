@@ -12,15 +12,26 @@ func InitRouter() {
 	{
 		u.POST("/register", Register)
 		u.POST("/login", Login)
-		u.GET("/refresh", middleware.Auth(), Refresh)
-		u.POST("/logout", middleware.Auth(), Logout)
+		u.GET("/refresh", middleware.UserAuth(), UserRefresh)
+		u.POST("/logout", middleware.UserAuth(), Logout)
 	}
 	p := r.Group("/person")
 	{
-		p.GET("/balance", middleware.Auth(), ViewBalance)
-		p.POST("/recharge", middleware.Auth(), Recharge)
-		p.GET("/information", middleware.Auth(), ViewInformation)
-		p.PUT("/modify", middleware.Auth(), ChangeInformation)
+		p.GET("/balance", middleware.UserAuth(), ViewBalance)
+		p.POST("/recharge", middleware.UserAuth(), Recharge)
+		p.GET("/information", middleware.UserAuth(), ViewInformation)
+		p.PUT("/modify", middleware.UserAuth(), ChangeInformation)
+	}
+	b := r.Group("/seller")
+	{
+		b.POST("/register", BackRegister)
+		b.POST("/login", BackLogin)
+		b.GET("/refresh", middleware.SellerAuth(), BackRefresh)
+		b.POST("logout", middleware.SellerAuth(), BackLogout)
+		b.GET("/view", middleware.SellerAuth(), ViewProduct)
+		b.POST("/add", middleware.SellerAuth(), AddProduct)
+		b.PUT("/update", middleware.SellerAuth(), UpdateProduct)
+		b.DELETE("/delete", middleware.SellerAuth(), DeleteProduct)
 	}
 	r.Run()
 }
