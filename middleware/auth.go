@@ -7,13 +7,13 @@ import (
 
 func UserAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		username, err := c.Cookie("username")
+		uid, err := c.Cookie("uid")
 		if err != nil {
 			util.RespUnauthorizedErr(c)
 			c.Abort()
 			return
 		}
-		if username == "" {
+		if uid == "" {
 			util.RespUnauthorizedErr(c)
 			c.Abort()
 			return
@@ -24,13 +24,13 @@ func UserAuth() gin.HandlerFunc {
 
 func SellerAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		seller, err := c.Cookie("seller")
+		sid, err := c.Cookie("sid")
 		if err != nil {
 			util.RespUnauthorizedErr(c)
 			c.Abort()
 			return
 		}
-		if seller == "" {
+		if sid == "" {
 			util.RespUnauthorizedErr(c)
 			c.Abort()
 			return

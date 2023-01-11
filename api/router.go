@@ -33,5 +33,11 @@ func InitRouter() {
 		b.PUT("/update", middleware.SellerAuth(), UpdateProduct)
 		b.DELETE("/delete", middleware.SellerAuth(), DeleteProduct)
 	}
+	h := r.Group("/home")
+	{
+		h.GET("/search")
+		h.GET("/sort")
+		h.GET("/category")
+	}
 	r.Run()
 }

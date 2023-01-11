@@ -5,8 +5,8 @@ import (
 	"suning/model"
 )
 
-func SearchBalancerFromUsername(username string) (a model.Account, err error) {
-	a, err = dao.SearchBalanceFromUsername(username)
+func SearchBalancerFromUid(uid string) (a model.Account, err error) {
+	a, err = dao.SearchBalanceFromUid(uid)
 	return
 }
 func CreateAccount(a model.Account) error {
@@ -17,12 +17,12 @@ func RechargeToAccount(username string, accounted int) (err error) {
 	err = dao.UpdateAccount(username, accounted)
 	return
 }
-func CreateInformation(username string) (err error) {
-	err = dao.InsertInformation(username)
+func CreateInformation(username string, uid int) (err error) {
+	err = dao.InsertInformation(username, uid)
 	return
 }
-func SearchInformationByUsername(username string) (i model.Information, err error) {
-	i, err = dao.SearchInformationByUsername(username)
+func SearchInformationByUid(uid string) (i model.Information, err error) {
+	i, err = dao.SearchInformationByUid(uid)
 	return
 }
 func ChangeInformation(i model.Information) (err error) {

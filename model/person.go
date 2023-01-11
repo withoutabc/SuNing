@@ -1,6 +1,7 @@
 package model
 
 type Information struct {
+	Uid      int    `json:"uid"`
 	Username string `json:"username"`
 	Nickname string `json:"nickname"`
 	Gender   string `json:"gender"`

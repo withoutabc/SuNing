@@ -6,12 +6,12 @@ import (
 	"suning/model"
 )
 
-func SearchSellerByName(sellName string) (s model.Seller, err error) {
-	row := DB.QueryRow("select * from seller where sellerName=?", sellName)
+func SearchSellerByName(seller string) (s model.Seller, err error) {
+	row := DB.QueryRow("select * from seller where seller=?", seller)
 	if err = row.Err(); row.Err() != nil {
 		return
 	}
-	err = row.Scan(&s.ID, &s.Seller, &s.Password)
+	err = row.Scan(&s.Sid, &s.Seller, &s.Password)
 	return
 }
 
@@ -21,20 +21,19 @@ func InsertSeller(s model.Seller) (err error) {
 }
 
 func InsertProduct(p model.Product) (err error) {
-	_, err = DB.Exec("insert into product (seller,name,price,sales,rating,category,image) values (?,?,?,?,?,?,?)", p.Seller, p.Name, p.Price, p.Sales, p.Rating, p.Category, p.Image)
+	_, err = DB.Exec("insert into product (sid,seller,name,price,sales,rating,category,image) values (?,?,?,?,?,?,?,?)", p.Sid, p.Seller, p.Name, p.Price, p.Sales, p.Rating, p.Category, p.Image)
 	return
 }
 
-func SearchNameBySeller(seller string) (products []model.Product, err error) {
-	rows, err := DB.Query("select * from product where seller=?", seller)
+func SearchNameBySid(sid string) (products []model.Product, err error) {
+	rows, err := DB.Query("select * from product where sid=?", sid)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 	//处理查询结果
 	for rows.Next() {
 		var p model.Product
-		if err = rows.Scan(&p.Id, &p.Seller, &p.Name, &p.Price, &p.Sales, &p.Rating, &p.Category, &p.Image); err != nil {
+		if err = rows.Scan(&p.Pid, &p.Sid, &p.Name, &p.Price, &p.Sales, &p.Rating, &p.Category, &p.Image, &p.Seller); err != nil {
 			return nil, err
 		}
 		products = append(products, p)
@@ -84,15 +83,24 @@ func UpdateProduct(p model.Product) (err error) {
 		sql.WriteString(" image=?")
 		arg = append(arg, p.Image)
 	}
-	sql.WriteString(" where seller=? and name=?")
-	arg = append(arg, p.Seller)
+	sql.WriteString(" where sid=? and name=?")
+	arg = append(arg, p.Sid)
 	arg = append(arg, p.Name)
 	fmt.Println(sql.String())
 	_, err = DB.Exec(sql.String(), arg...)
 	return
 }
 
-func DeleteProduct(seller string, name string) (err error) {
-	_, err = DB.Exec("delete from product where seller=? and name=?", seller, name)
+func DeleteProduct(sid string, name string) (err error) {
+	_, err = DB.Exec("delete from product where sid=? and name=?", sid, name)
+	return
+}
+
+func SearchSellerBySid(sid string) (s model.Seller, err error) {
+	row := DB.QueryRow("select * from seller where sid=?", sid)
+	if err = row.Err(); row.Err() != nil {
+		return
+	}
+	err = row.Scan(&s.Sid, &s.Seller, &s.Password)
 	return
 }

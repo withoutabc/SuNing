@@ -7,7 +7,7 @@ func SearchUserByUsername(username string) (u model.User, err error) {
 	if err = row.Err(); row.Err() != nil {
 		return
 	}
-	err = row.Scan(&u.ID, &u.Username, &u.Password)
+	err = row.Scan(&u.Uid, &u.Username, &u.Password)
 	return
 }
 

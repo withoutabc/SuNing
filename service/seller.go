@@ -5,8 +5,8 @@ import (
 	"suning/model"
 )
 
-func SearchSellerByName(sellerName string) (s model.Seller, err error) {
-	s, err = dao.SearchSellerByName(sellerName)
+func SearchSellerByName(seller string) (s model.Seller, err error) {
+	s, err = dao.SearchSellerByName(seller)
 	return
 }
 
@@ -20,8 +20,8 @@ func AddProduct(p model.Product) (err error) {
 	return
 }
 
-func SearchNameBySeller(seller string) (products []model.Product, err error) {
-	products, err = dao.SearchNameBySeller(seller)
+func SearchNameBySid(sid string) (products []model.Product, err error) {
+	products, err = dao.SearchNameBySid(sid)
 	return
 }
 
@@ -30,7 +30,12 @@ func UpdateProduct(p model.Product) (err error) {
 	return
 }
 
-func DeleteProduct(seller string, name string) (err error) {
-	err = dao.DeleteProduct(seller, name)
+func DeleteProduct(sid string, name string) (err error) {
+	err = dao.DeleteProduct(sid, name)
+	return
+}
+
+func SearchSellerBySid(sid string) (s model.Seller, err error) {
+	s, err = dao.SearchSellerBySid(sid)
 	return
 }

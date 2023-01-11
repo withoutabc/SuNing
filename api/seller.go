@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
+	"strconv"
 	"suning/model"
 	"suning/service"
 	"suning/util"
@@ -15,7 +16,7 @@ func BackRegister(c *gin.Context) {
 	seller := c.PostForm("seller")
 	password := c.PostForm("password")
 	confPassword := c.PostForm("confirmPassword")
-	//判断是否有效输入
+	//判断是否输入
 	if seller == "" || password == "" || confPassword == "" {
 		util.RespParamErr(c)
 		return
@@ -58,7 +59,7 @@ func BackLogin(c *gin.Context) {
 		return
 	}
 	//查找用户
-	u, err := service.SearchSellerByName(seller)
+	s, err := service.SearchSellerByName(seller)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			util.NormErr(c, 300, "user don't exist")
@@ -70,40 +71,40 @@ func BackLogin(c *gin.Context) {
 		return
 	}
 	//密码错误
-	if u.Password != password {
+	if s.Password != password {
 		util.NormErr(c, 300, "wrong password")
 		return
 	}
-	util.RespOK(c)
+	util.ViewSeller(c, "login successfully", s)
 	//设置cookie
-	c.SetCookie("seller", seller, 3600, "/", "localhost", false, true)
+	c.SetCookie("sid", strconv.Itoa(s.Sid), 3600, "/", "localhost", false, true)
 }
 
 func BackLogout(c *gin.Context) {
 	//检测是否登录
-	seller, err := c.Cookie("seller")
+	sid, err := c.Cookie("sid")
 	if err != nil {
 		util.RespUnauthorizedErr(c)
 		return
 	}
-	if seller == "" {
+	if sid == "" {
 		util.RespUnauthorizedErr(c)
 		return
 	}
 	//清除登陆状态cookie
-	c.SetCookie("seller", "", -1, "/", "localhost", false, true)
+	c.SetCookie("sid", "", -1, "/", "localhost", false, true)
 	util.RespOK(c)
 }
 
 func BackRefresh(c *gin.Context) {
 	//判断cookie过没过期
-	seller, err := c.Cookie("seller")
+	sid, err := c.Cookie("sid")
 	if err != nil {
 		util.RespUnauthorizedErr(c)
 		c.Abort()
 		return
 	}
-	if seller == "" {
+	if sid == "" {
 		util.RespUnauthorizedErr(c)
 		c.Abort()
 		return
@@ -112,41 +113,55 @@ func BackRefresh(c *gin.Context) {
 	c.Next()
 	// 设置新的cookie
 	expiration := time.Now().Add(time.Hour)
-	c.SetCookie("seller", seller, int(expiration.Unix()), "/", "localhost", false, true)
+	c.SetCookie("sid", sid, int(expiration.Unix()), "/", "localhost", false, true)
 	util.RespOK(c)
 }
 
 func ViewProduct(c *gin.Context) {
 	//获取卖家名称
-	seller, err := c.Cookie("seller")
+	sid, err := c.Cookie("sid")
 	if err != nil {
 		util.RespUnauthorizedErr(c)
 		return
 	}
-	if seller == "" {
+	if sid == "" {
 		util.RespUnauthorizedErr(c)
 		return
 	}
 	//查询卖家的商品
 	var products []model.Product
-	products, err = service.SearchNameBySeller(seller)
+	products, err = service.SearchNameBySid(sid)
+	if err != nil {
+		fmt.Printf("view product err:%v", err)
+		util.RespInternalErr(c)
+		return
+	}
 	util.ViewProducts(c, "view product successfully", products)
 }
 
 func AddProduct(c *gin.Context) {
 	//获取卖家名称
-	seller, err := c.Cookie("seller")
+	sid, err := c.Cookie("sid")
 	if err != nil {
 		util.RespUnauthorizedErr(c)
 		return
 	}
-	if seller == "" {
+	if sid == "" {
 		util.RespUnauthorizedErr(c)
+		return
+	}
+	//根据uid查找seller
+	var s model.Seller
+	s, err = service.SearchSellerBySid(sid)
+	if err != nil {
+		fmt.Printf("search seller:%v", err)
+		util.RespInternalErr(c)
 		return
 	}
 	//获取商品信息
 	p := model.Product{
-		Seller:   seller,
+		Sid:      sid,
+		Seller:   s.Seller,
 		Name:     c.PostForm("name"),
 		Price:    c.PostForm("price"),
 		Sales:    c.PostForm("sales"),
@@ -160,7 +175,7 @@ func AddProduct(c *gin.Context) {
 	}
 	//同一商家的商品名不可重复
 	var products []model.Product
-	products, err = service.SearchNameBySeller(seller)
+	products, err = service.SearchNameBySid(sid)
 	for _, product := range products {
 		if product.Name == p.Name {
 			util.NormErr(c, 400, "product has existed")
@@ -179,18 +194,18 @@ func AddProduct(c *gin.Context) {
 
 func UpdateProduct(c *gin.Context) {
 	//获取卖家名称
-	seller, err := c.Cookie("seller")
+	sid, err := c.Cookie("sid")
 	if err != nil {
 		util.RespUnauthorizedErr(c)
 		return
 	}
-	if seller == "" {
+	if sid == "" {
 		util.RespUnauthorizedErr(c)
 		return
 	}
 	//获取要修改的数据
 	p := model.Product{
-		Seller:   seller,
+		Sid:      sid,
 		Name:     c.PostForm("name"),
 		Price:    c.PostForm("price"),
 		Sales:    c.PostForm("sales"),
@@ -206,7 +221,7 @@ func UpdateProduct(c *gin.Context) {
 	//判断name是否存在
 	var products []model.Product
 	var count int
-	products, err = service.SearchNameBySeller(seller)
+	products, err = service.SearchNameBySid(sid)
 	for _, product := range products {
 		if product.Name == p.Name {
 			count = 1
@@ -234,12 +249,12 @@ func UpdateProduct(c *gin.Context) {
 
 func DeleteProduct(c *gin.Context) {
 	//获取卖家名称
-	seller, err := c.Cookie("seller")
+	sid, err := c.Cookie("sid")
 	if err != nil {
 		util.RespUnauthorizedErr(c)
 		return
 	}
-	if seller == "" {
+	if sid == "" {
 		util.RespUnauthorizedErr(c)
 		return
 	}
@@ -248,7 +263,7 @@ func DeleteProduct(c *gin.Context) {
 	//判断name是否存在
 	var products []model.Product
 	var count int
-	products, err = service.SearchNameBySeller(seller)
+	products, err = service.SearchNameBySid(sid)
 	for _, product := range products {
 		if product.Name == name {
 			count = 1
@@ -260,7 +275,7 @@ func DeleteProduct(c *gin.Context) {
 		return
 	}
 	//删除商品
-	err = service.DeleteProduct(seller, name)
+	err = service.DeleteProduct(sid, name)
 	if err != nil {
 		log.Printf("delete product err:%v", err)
 		util.RespInternalErr(c)

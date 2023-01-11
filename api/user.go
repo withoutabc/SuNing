@@ -2,8 +2,10 @@ package api
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
+	"strconv"
 	"suning/model"
 	"suning/service"
 	"suning/util"
@@ -42,20 +44,37 @@ func Register(c *gin.Context) {
 		Password: password,
 	})
 	if err != nil {
+		fmt.Printf("create user err:%v", err)
 		util.RespInternalErr(c)
 		return
 	}
+	//查找用户
+	u, err = service.SearchUserByUsername(username)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			util.NormErr(c, 300, "user don't exist")
+		} else {
+			log.Printf("search user error:%v", err)
+			util.RespInternalErr(c)
+			return
+		}
+		return
+	}
+	//创建账户
 	err = service.CreateAccount(model.Account{
 		Username: username,
 		Balance:  0,
+		Uid:      int(u.Uid),
 	})
 	if err != nil {
+		fmt.Printf("create account err:%v", err)
 		util.RespInternalErr(c)
 		return
 	}
-	err = service.CreateInformation(username)
+	//创建信息表
+	err = service.CreateInformation(username, int(u.Uid))
 	if err != nil {
-		log.Printf("%v", err)
+		log.Printf("create information:%v", err)
 		util.RespInternalErr(c)
 		return
 	}
@@ -87,36 +106,36 @@ func Login(c *gin.Context) {
 		util.NormErr(c, 300, "wrong password")
 		return
 	}
-	util.RespOK(c)
+	util.ViewUser(c, "login success", u)
 	//设置cookie
-	c.SetCookie("username", username, 3600, "/", "localhost", false, true)
+	c.SetCookie("uid", strconv.Itoa(u.Uid), 3600, "/", "localhost", false, true)
 }
 
 func Logout(c *gin.Context) {
 	//检测是否登录
-	username, err := c.Cookie("username")
+	uid, err := c.Cookie("uid")
 	if err != nil {
 		util.RespUnauthorizedErr(c)
 		return
 	}
-	if username == "" {
+	if uid == "" {
 		util.RespUnauthorizedErr(c)
 		return
 	}
 	//清除登陆状态cookie
-	c.SetCookie("username", "", -1, "/", "localhost", false, true)
+	c.SetCookie("uid", "", -1, "/", "localhost", false, true)
 	util.RespOK(c)
 }
 
 func UserRefresh(c *gin.Context) {
 	//判断cookie过没过期
-	username, err := c.Cookie("username")
+	uid, err := c.Cookie("uid")
 	if err != nil {
 		util.RespUnauthorizedErr(c)
 		c.Abort()
 		return
 	}
-	if username == "" {
+	if uid == "" {
 		util.RespUnauthorizedErr(c)
 		c.Abort()
 		return
@@ -125,6 +144,6 @@ func UserRefresh(c *gin.Context) {
 	c.Next()
 	// 设置新的cookie
 	expiration := time.Now().Add(time.Hour)
-	c.SetCookie("username", username, int(expiration.Unix()), "/", "localhost", false, true)
+	c.SetCookie("uid", uid, int(expiration.Unix()), "/", "localhost", false, true)
 	util.RespOK(c)
 }

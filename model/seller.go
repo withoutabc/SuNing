@@ -1,13 +1,14 @@
 package model
 
 type Seller struct {
-	ID       int64  `json:"id"`
+	Sid      int    `json:"sid"`
 	Seller   string `json:"seller"`
 	Password string `json:"password"`
 }
 
 type Product struct {
-	Id       int    `json:"id"`
+	Pid      int    `json:"pid"`
+	Sid      string `json:"sid"`
 	Seller   string `json:"seller"`
 	Name     string `json:"name"`
 	Price    string `json:"price"`

@@ -11,19 +11,19 @@ import (
 )
 
 func ViewBalance(c *gin.Context) {
-	//获取用户名
-	username, err := c.Cookie("username")
+	//获取uid
+	uid, err := c.Cookie("uid")
 	if err != nil {
 		util.RespUnauthorizedErr(c)
 		return
 	}
-	if username == "" {
+	if uid == "" {
 		util.RespUnauthorizedErr(c)
 		return
 	}
 	//查询数据，传入结构体
 	var a model.Account
-	a, err = service.SearchBalancerFromUsername(username)
+	a, err = service.SearchBalancerFromUid(uid)
 	if err != nil && err != sql.ErrNoRows {
 		log.Printf("search user error:%v", err)
 		util.RespInternalErr(c)
@@ -33,13 +33,13 @@ func ViewBalance(c *gin.Context) {
 }
 
 func Recharge(c *gin.Context) {
-	//获取用户名
-	username, err := c.Cookie("username")
+	//获取uid
+	uid, err := c.Cookie("uid")
 	if err != nil {
 		util.RespUnauthorizedErr(c)
 		return
 	}
-	if username == "" {
+	if uid == "" {
 		util.RespUnauthorizedErr(c)
 		return
 	}
@@ -56,7 +56,7 @@ func Recharge(c *gin.Context) {
 	}
 	//查询用户目前余额
 	var a model.Account
-	a, err = service.SearchBalancerFromUsername(username)
+	a, err = service.SearchBalancerFromUid(uid)
 	if err != nil && err != sql.ErrNoRows {
 		log.Printf("search account error:%v", err)
 		util.RespInternalErr(c)
@@ -64,33 +64,36 @@ func Recharge(c *gin.Context) {
 	}
 	//充值，写入数据库
 	accounted := a.Balance + account
-	err = service.RechargeToAccount(username, accounted)
+	err = service.RechargeToAccount(uid, accounted)
 	if err != nil {
 		log.Printf("recharge error:%v", err)
 		util.RespInternalErr(c)
 		return
 	}
-	a = model.Account{
-		Username: username,
-		Balance:  accounted,
+	//查询用户目前余额
+	a, err = service.SearchBalancerFromUid(uid)
+	if err != nil && err != sql.ErrNoRows {
+		log.Printf("search account error:%v", err)
+		util.RespInternalErr(c)
+		return
 	}
 	util.ViewBalance(c, "recharge successfully", a)
 }
 
 func ViewInformation(c *gin.Context) {
-	//获取用户名
-	username, err := c.Cookie("username")
+	//获取uid
+	uid, err := c.Cookie("uid")
 	if err != nil {
 		util.RespUnauthorizedErr(c)
 		return
 	}
-	if username == "" {
+	if uid == "" {
 		util.RespUnauthorizedErr(c)
 		return
 	}
 	//查询数据库
 	var i model.Information
-	i, err = service.SearchInformationByUsername(username)
+	i, err = service.SearchInformationByUid(uid)
 	if err != nil && err != sql.ErrNoRows {
 		log.Printf("search information error:%v", err)
 		util.RespInternalErr(c)
@@ -100,19 +103,19 @@ func ViewInformation(c *gin.Context) {
 }
 
 func ChangeInformation(c *gin.Context) {
-	//获取用户名
-	username, err := c.Cookie("username")
+	//获取uid
+	uid, err := c.Cookie("uid")
 	if err != nil {
 		util.RespUnauthorizedErr(c)
 		return
 	}
-	if username == "" {
+	if uid == "" {
 		util.RespUnauthorizedErr(c)
 		return
 	}
+	Uid, _ := strconv.Atoi(uid)
 	//传入要修改的信息
 	i := model.Information{
-		Username: username,
 		Nickname: c.PostForm("nickname"),    //最多15个字符
 		Gender:   c.PostForm("gender"),      //0保密 1男 2女
 		PhoneNum: c.PostForm("phoneNumber"), //11位
@@ -121,6 +124,7 @@ func ChangeInformation(c *gin.Context) {
 		Month:    c.PostForm("month"),       //1-12
 		Day:      c.PostForm("day"),         //1-31
 		Avatar:   c.PostForm("avatar"),
+		Uid:      Uid,
 	}
 	//分析是否符合格式
 	//if len(i.Nickname) > 15 {
@@ -156,6 +160,10 @@ func ChangeInformation(c *gin.Context) {
 	//	}
 	//}
 	//插入到数据库
+	if i.Nickname == "" && i.Gender == "" && i.PhoneNum == "" && i.Email == "" && i.Year == "" && i.Day == "" {
+		util.NormErr(c, 400, "fail to update")
+		return
+	}
 	err = service.ChangeInformation(i)
 	if err != nil {
 		log.Printf("change information err:%v", err)
