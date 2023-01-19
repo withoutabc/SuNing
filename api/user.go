@@ -15,9 +15,9 @@ import (
 func Register(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
-	confPassword := c.PostForm("confirmPassword")
+	confirmPassword := c.PostForm("confirmPassword")
 	//判断是否有效输入
-	if username == "" || password == "" || confPassword == "" {
+	if username == "" || password == "" || confirmPassword == "" {
 		util.RespParamErr(c)
 		return
 	}
@@ -34,7 +34,7 @@ func Register(c *gin.Context) {
 		return
 	}
 	//两次密码是否一致
-	if confPassword != password {
+	if confirmPassword != password {
 		util.NormErr(c, 300, "different password")
 		return
 	}

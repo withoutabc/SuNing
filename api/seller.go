@@ -15,9 +15,9 @@ import (
 func BackRegister(c *gin.Context) {
 	seller := c.PostForm("seller")
 	password := c.PostForm("password")
-	confPassword := c.PostForm("confirmPassword")
+	confirmPassword := c.PostForm("confirm_password")
 	//判断是否输入
-	if seller == "" || password == "" || confPassword == "" {
+	if seller == "" || password == "" || confirmPassword == "" {
 		util.RespParamErr(c)
 		return
 	}
@@ -34,7 +34,7 @@ func BackRegister(c *gin.Context) {
 		return
 	}
 	//两次密码是否一致
-	if confPassword != password {
+	if confirmPassword != password {
 		util.NormErr(c, 300, "different password")
 		return
 	}
@@ -121,10 +121,6 @@ func ViewProduct(c *gin.Context) {
 	//获取卖家名称
 	sid, err := c.Cookie("sid")
 	if err != nil {
-		util.RespUnauthorizedErr(c)
-		return
-	}
-	if sid == "" {
 		util.RespUnauthorizedErr(c)
 		return
 	}

@@ -15,29 +15,31 @@ func InitRouter() {
 		u.GET("/refresh", middleware.UserAuth(), UserRefresh)
 		u.POST("/logout", middleware.UserAuth(), Logout)
 	}
-	p := r.Group("/person")
-	{
-		p.GET("/balance", middleware.UserAuth(), ViewBalance)
-		p.POST("/recharge", middleware.UserAuth(), Recharge)
-		p.GET("/information", middleware.UserAuth(), ViewInformation)
-		p.PUT("/modify", middleware.UserAuth(), ChangeInformation)
-	}
-	b := r.Group("/seller")
-	{
-		b.POST("/register", BackRegister)
-		b.POST("/login", BackLogin)
-		b.GET("/refresh", middleware.SellerAuth(), BackRefresh)
-		b.POST("logout", middleware.SellerAuth(), BackLogout)
-		b.GET("/view", middleware.SellerAuth(), ViewProduct)
-		b.POST("/add", middleware.SellerAuth(), AddProduct)
-		b.PUT("/update", middleware.SellerAuth(), UpdateProduct)
-		b.DELETE("/delete", middleware.SellerAuth(), DeleteProduct)
-	}
 	h := r.Group("/home")
 	{
 		h.GET("/search")
 		h.GET("/sort")
 		h.GET("/category")
 	}
+	p := r.Group("/person")
+	{
+		p.Use(middleware.UserAuth())
+		p.GET("/balance/:uid", ViewBalance)
+		p.POST("/recharge/:uid", Recharge)
+		p.GET("/information/:uid", ViewInformation)
+		p.PUT("/modify/:uid", ChangeInformation)
+	}
+	b := r.Group("/seller")
+	{
+		b.POST("/register", BackRegister)
+		b.POST("/login", BackLogin)
+		b.GET("/refresh", middleware.SellerAuth(), BackRefresh)
+		b.POST("/logout", middleware.SellerAuth(), BackLogout)
+		b.GET("/view", middleware.SellerAuth(), ViewProduct)
+		b.POST("/add", middleware.SellerAuth(), AddProduct)
+		b.PUT("/update", middleware.SellerAuth(), UpdateProduct)
+		b.DELETE("/delete", middleware.SellerAuth(), DeleteProduct)
+	}
+
 	r.Run()
 }
