@@ -12,6 +12,7 @@ import (
 	"suning/util"
 )
 
+// BackRegister 实现了后台注册接口
 func BackRegister(c *gin.Context) {
 	seller := c.PostForm("seller")
 	password := c.PostForm("password")
@@ -48,9 +49,10 @@ func BackRegister(c *gin.Context) {
 		util.RespInternalErr(c)
 		return
 	}
-	util.RespOK(c)
+	util.RespOK(c, "register success")
 }
 
+// BackLogin 实现了后台登录接口
 func BackLogin(c *gin.Context) {
 	seller := c.PostForm("seller")
 	password := c.PostForm("password")
@@ -63,7 +65,7 @@ func BackLogin(c *gin.Context) {
 	s, err := service.SearchSellerByName(seller)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			util.NormErr(c, 300, "user don't exist")
+			util.NormErr(c, 300, "user not exist")
 		} else {
 			log.Printf("search seller error:%v", err)
 			util.RespInternalErr(c)
@@ -77,7 +79,13 @@ func BackLogin(c *gin.Context) {
 		return
 	}
 	//密码正确
-	aToken, rToken, _ := service.GenToken(strconv.Itoa(s.Sid), "seller")
+	aToken, rToken, err := service.GenToken(strconv.Itoa(s.Sid), "seller")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": 400,
+			"info":   "generate token error",
+		})
+	}
 	c.JSON(http.StatusOK, model.RespLogin{
 		Status: 200,
 		Info:   "login success",
@@ -90,88 +98,68 @@ func BackLogin(c *gin.Context) {
 }
 
 func BackLogout(c *gin.Context) {
-	//检测是否登录
-	sid, err := c.Cookie("sid")
-	if err != nil {
-		util.RespUnauthorizedErr(c)
-		return
-	}
-	if sid == "" {
-		util.RespUnauthorizedErr(c)
-		return
-	}
-	//清除登陆状态cookie
-	c.SetCookie("sid", "", -1, "/", "localhost", false, true)
-	util.RespOK(c)
 }
 
-func BackRefresh(c *gin.Context) {
-	//refresh_token
-	rToken := c.PostForm("refresh_token")
-	if rToken == "" {
-		util.RespParamErr(c)
-		return
-	}
-	_, err := service.ParseToken(rToken)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status": 2005,
-			"info":   "无效的token",
-		})
-		return
-	}
-	//生成新的token
-	newAToken, newRToken, err := service.RefreshToken(rToken)
-	if err != nil {
-		fmt.Printf("refresh err:%v", err)
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status": 400,
-			"info":   err.Error(),
-		})
-		return
-	}
-	c.JSON(http.StatusOK, model.RespToken{
-		Status: 200,
-		Info:   "refresh token success",
-		Data: model.Token{
-			Token:        newAToken,
-			RefreshToken: newRToken,
-		},
-	})
-}
+//// BackRefresh 实现了后台刷新token接口
+//func BackRefresh(c *gin.Context) {
+//	//refresh_token
+//	rToken := c.PostForm("refresh_token")
+//	if rToken == "" {
+//		util.RespParamErr(c)
+//		return
+//	}
+//	_, err := service.ParseToken(rToken)
+//	if err != nil {
+//		c.JSON(http.StatusBadRequest, gin.H{
+//			"status": 2005,
+//			"info":   "无效的token",
+//		})
+//		return
+//	}
+//	//生成新的token
+//	newAToken, newRToken, err := service.RefreshToken(rToken)
+//	if err != nil {
+//		fmt.Printf("refresh err:%v", err)
+//		c.JSON(http.StatusBadRequest, gin.H{
+//			"status": 400,
+//			"info":   err.Error(),
+//		})
+//		return
+//	}
+//	c.JSON(http.StatusOK, model.RespToken{
+//		Status: 200,
+//		Info:   "refresh token success",
+//		Data: model.Token{
+//			Token:        newAToken,
+//			RefreshToken: newRToken,
+//		},
+//	})
+//}
 
+// ViewProduct 实现了后台查看商品接口
 func ViewProduct(c *gin.Context) {
-	//获取卖家名称
-	sid, err := c.Cookie("sid")
-	if err != nil {
-		util.RespUnauthorizedErr(c)
-		return
-	}
+	//获取卖家id
+	sid := c.Param("sid")
 	//查询卖家的商品
-	var products []model.Product
-	products, err = service.SearchNameBySid(sid)
+	products, err := service.SearchNameBySid(sid)
 	if err != nil {
 		fmt.Printf("view product err:%v", err)
 		util.RespInternalErr(c)
 		return
 	}
-	util.ViewProducts(c, "view product successfully", products)
+	c.JSON(http.StatusOK, model.RespProducts{
+		Status: 200,
+		Info:   "view products success",
+		Data:   products,
+	})
 }
 
+// AddProduct 实现了后台添加商品接口
 func AddProduct(c *gin.Context) {
-	//获取卖家名称
-	sid, err := c.Cookie("sid")
-	if err != nil {
-		util.RespUnauthorizedErr(c)
-		return
-	}
-	if sid == "" {
-		util.RespUnauthorizedErr(c)
-		return
-	}
-	//根据uid查找seller
-	var s model.Seller
-	s, err = service.SearchSellerBySid(sid)
+	//获取卖家id
+	sid := c.Param("sid")
+	//根据sid查找seller
+	s, err := service.SearchSellerBySid(sid)
 	if err != nil {
 		fmt.Printf("search seller:%v", err)
 		util.RespInternalErr(c)
@@ -208,20 +196,13 @@ func AddProduct(c *gin.Context) {
 		util.RespInternalErr(c)
 		return
 	}
-	util.RespOK(c)
+	util.RespOK(c, "add product success")
 }
 
+// UpdateProduct 实现了后台修改商品信息接口
 func UpdateProduct(c *gin.Context) {
-	//获取卖家名称
-	sid, err := c.Cookie("sid")
-	if err != nil {
-		util.RespUnauthorizedErr(c)
-		return
-	}
-	if sid == "" {
-		util.RespUnauthorizedErr(c)
-		return
-	}
+	//获取卖家id
+	sid := c.Param("sid")
 	//获取要修改的数据
 	p := model.Product{
 		Sid:      sid,
@@ -238,9 +219,8 @@ func UpdateProduct(c *gin.Context) {
 		return
 	}
 	//判断name是否存在
-	var products []model.Product
 	var count int
-	products, err = service.SearchNameBySid(sid)
+	products, err := service.SearchNameBySid(sid)
 	for _, product := range products {
 		if product.Name == p.Name {
 			count = 1
@@ -256,6 +236,7 @@ func UpdateProduct(c *gin.Context) {
 		util.NormErr(c, 400, "fail to update")
 		return
 	}
+	//判断修改后信息是否有变化
 	//修改数据
 	err = service.UpdateProduct(p)
 	if err != nil {
@@ -263,26 +244,18 @@ func UpdateProduct(c *gin.Context) {
 		util.RespInternalErr(c)
 		return
 	}
-	util.RespOK(c)
+	util.RespOK(c, "update product success")
 }
 
+// DeleteProduct 实现了后台删除商品接口
 func DeleteProduct(c *gin.Context) {
-	//获取卖家名称
-	sid, err := c.Cookie("sid")
-	if err != nil {
-		util.RespUnauthorizedErr(c)
-		return
-	}
-	if sid == "" {
-		util.RespUnauthorizedErr(c)
-		return
-	}
+	//获取卖家id
+	sid := c.Param("sid")
 	//获取要删除的商品名称
 	name := c.Query("name")
 	//判断name是否存在
-	var products []model.Product
 	var count int
-	products, err = service.SearchNameBySid(sid)
+	products, err := service.SearchNameBySid(sid)
 	for _, product := range products {
 		if product.Name == name {
 			count = 1
@@ -300,5 +273,5 @@ func DeleteProduct(c *gin.Context) {
 		util.RespInternalErr(c)
 		return
 	}
-	util.RespOK(c)
+	util.RespOK(c, "delete product success")
 }

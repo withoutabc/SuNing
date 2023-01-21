@@ -41,12 +41,12 @@ func InitRouter() {
 		a := b.Group("/auth")
 		{
 			a.Use(middleware.JWTAuthMiddleware(), middleware.SellerAuth())
-			a.GET("/refresh", BackRefresh)
+			a.GET("/refresh", Refresh)
 			a.POST("/logout", BackLogout)
 			a.GET("/view/:sid", ViewProduct)
-			a.POST("/add", AddProduct)
-			a.PUT("/update", UpdateProduct)
-			a.DELETE("/delete", DeleteProduct)
+			a.POST("/add/:sid", AddProduct)
+			a.PUT("/update/:sid", UpdateProduct)
+			a.DELETE("/delete/:sid", DeleteProduct)
 		}
 
 	}

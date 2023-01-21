@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"github.com/gin-gonic/gin"
 	"log"
+	"net/http"
 	"strconv"
 	"suning/model"
 	"suning/service"
@@ -13,37 +14,27 @@ import (
 // ViewBalance 实现了查看账户余额接口
 func ViewBalance(c *gin.Context) {
 	//获取uid
-	uid, err := c.Cookie("uid")
-	if err != nil {
-		util.RespUnauthorizedErr(c)
-		return
-	}
-	if uid == "" {
-		util.RespUnauthorizedErr(c)
-		return
-	}
+	uid := c.Param("uid")
 	//查询数据，传入结构体
-	var a model.Account
-	a, err = service.SearchBalancerFromUid(uid)
+	a, err := service.SearchBalancerFromUid(uid)
 	if err != nil && err != sql.ErrNoRows {
 		log.Printf("search user error:%v", err)
 		util.RespInternalErr(c)
 		return
 	}
-	util.ViewBalance(c, "view balance successfully", a)
+	c.JSON(http.StatusOK, model.RespBalance{
+		Status: 200,
+		Info:   "view balance success",
+		Data:   a,
+	})
 }
 
 // Recharge 实现了充值接口
 func Recharge(c *gin.Context) {
 	//获取uid
-	uid, err := c.Cookie("uid")
-	if err != nil {
-		util.RespUnauthorizedErr(c)
-		return
-	}
+	uid := c.Param("uid")
 	//获取充值金额
-	var account int
-	account, err = strconv.Atoi(c.Query("account"))
+	account, err := strconv.Atoi(c.Query("account"))
 	if err != nil {
 		util.NormErr(c, 400, "invalid recharge")
 		return
@@ -75,34 +66,31 @@ func Recharge(c *gin.Context) {
 		util.RespInternalErr(c)
 		return
 	}
-	util.ViewBalance(c, "recharge successfully", a)
+	util.RespOK(c, "recharge success")
 }
 
+// ViewInformation 实现了查看个人信息接口
 func ViewInformation(c *gin.Context) {
 	//获取uid
-	uid, err := c.Cookie("uid")
-	if err != nil {
-		util.RespUnauthorizedErr(c)
-		return
-	}
+	uid := c.Param("uid")
 	//查询数据库
-	var i model.Information
-	i, err = service.SearchInformationByUid(uid)
+	i, err := service.SearchInformationByUid(uid)
 	if err != nil && err != sql.ErrNoRows {
 		log.Printf("search information error:%v", err)
 		util.RespInternalErr(c)
 		return
 	}
-	util.ViewInformation(c, "view information successfully", i)
+	c.JSON(http.StatusOK, model.RespInformation{
+		Status: 200,
+		Info:   "view information success",
+		Data:   i,
+	})
 }
 
+// ChangeInformation 实现了修改个人信息接口
 func ChangeInformation(c *gin.Context) {
 	//获取uid
-	uid, err := c.Cookie("uid")
-	if err != nil {
-		util.RespUnauthorizedErr(c)
-		return
-	}
+	uid := c.Param("uid")
 	Uid, _ := strconv.Atoi(uid)
 	//传入要修改的信息
 	i := model.Information{
@@ -154,7 +142,7 @@ func ChangeInformation(c *gin.Context) {
 		util.NormErr(c, 400, "fail to update")
 		return
 	}
-	err = service.ChangeInformation(i)
+	err := service.ChangeInformation(i)
 	if err != nil {
 		log.Printf("change information err:%v", err)
 		util.RespInternalErr(c)
@@ -167,5 +155,5 @@ func ChangeInformation(c *gin.Context) {
 	//	util.RespInternalErr(c)
 	//	return
 	//}
-	util.RespOK(c)
+	util.RespOK(c, "change information success")
 }

@@ -23,5 +23,20 @@ type Login struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-type Products struct {
+type RespProducts struct {
+	Status int       `json:"status"`
+	Info   string    `json:"info"`
+	Data   []Product `json:"product"`
+}
+
+type RespBalance struct {
+	Status int     `json:"status"`
+	Info   string  `json:"info"`
+	Data   Account `json:"data"`
+}
+
+type RespInformation struct {
+	Status int         `json:"status"`
+	Info   string      `json:"info"`
+	Data   Information `json:"data"`
 }

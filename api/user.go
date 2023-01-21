@@ -12,6 +12,7 @@ import (
 	"suning/util"
 )
 
+// Register 实现了用户注册接口
 func Register(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
@@ -62,9 +63,9 @@ func Register(c *gin.Context) {
 	}
 	//创建账户
 	err = service.CreateAccount(model.Account{
+		Uid:      u.Uid,
 		Username: username,
 		Balance:  0,
-		Uid:      u.Uid,
 	})
 	if err != nil {
 		fmt.Printf("create account err:%v", err)
@@ -78,9 +79,10 @@ func Register(c *gin.Context) {
 		util.RespInternalErr(c)
 		return
 	}
-	util.RespOK(c)
+	util.RespOK(c, "register success")
 }
 
+// Login 实现了用户登录接口
 func Login(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
@@ -107,7 +109,15 @@ func Login(c *gin.Context) {
 		return
 	}
 	//密码正确
-	aToken, rToken, _ := service.GenToken(strconv.Itoa(u.Uid), "user")
+	aToken, rToken, err := service.GenToken(strconv.Itoa(u.Uid), "user")
+	if err != nil {
+		fmt.Printf("refresh err:%v", err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": 400,
+			"info":   err.Error(),
+		})
+		return
+	}
 	c.JSON(http.StatusOK, model.RespLogin{
 		Status: 200,
 		Info:   "login success",
@@ -120,21 +130,10 @@ func Login(c *gin.Context) {
 }
 
 func Logout(c *gin.Context) {
-	//检测是否登录
-	uid, err := c.Cookie("uid")
-	if err != nil {
-		util.RespUnauthorizedErr(c)
-		return
-	}
-	if uid == "" {
-		util.RespUnauthorizedErr(c)
-		return
-	}
-	//清除登陆状态cookie
-	c.SetCookie("uid", "", -1, "/", "localhost", false, true)
-	util.RespOK(c)
+
 }
 
+// Refresh 实现了刷新token接口
 func Refresh(c *gin.Context) {
 	//refresh_token
 	rToken := c.PostForm("refresh_token")
@@ -146,7 +145,7 @@ func Refresh(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status": 2005,
-			"info":   "无效的Token",
+			"info":   "无效的token",
 		})
 		return
 	}
