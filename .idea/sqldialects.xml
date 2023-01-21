@@ -2,7 +2,7 @@
 <project version="4">
   <component name="SqlDialectMappings">
     <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/d5a3abdc-06b3-4f1a-8025-0c7e21581894/console_5.sql" dialect="MySQL" />
-    <file url="file://$PROJECT_DIR$/dao/person.go" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/dao/individual.go" dialect="GenericSQL" />
     <file url="file://$PROJECT_DIR$/dao/seller.go" dialect="GenericSQL" />
     <file url="file://$PROJECT_DIR$/dao/user.go" dialect="GenericSQL" />
   </component>

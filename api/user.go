@@ -5,17 +5,17 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
+	"net/http"
 	"strconv"
 	"suning/model"
 	"suning/service"
 	"suning/util"
-	"time"
 )
 
 func Register(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
-	confirmPassword := c.PostForm("confirmPassword")
+	confirmPassword := c.PostForm("confirm_password")
 	//判断是否有效输入
 	if username == "" || password == "" || confirmPassword == "" {
 		util.RespParamErr(c)
@@ -64,7 +64,7 @@ func Register(c *gin.Context) {
 	err = service.CreateAccount(model.Account{
 		Username: username,
 		Balance:  0,
-		Uid:      int(u.Uid),
+		Uid:      u.Uid,
 	})
 	if err != nil {
 		fmt.Printf("create account err:%v", err)
@@ -85,7 +85,7 @@ func Login(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
 	//有效输入
-	if username == " " || password == "" {
+	if username == "" || password == "" {
 		util.RespParamErr(c)
 		return
 	}
@@ -106,9 +106,17 @@ func Login(c *gin.Context) {
 		util.NormErr(c, 300, "wrong password")
 		return
 	}
-	util.ViewUser(c, "login success", u)
-	//设置cookie
-	c.SetCookie("uid", strconv.Itoa(u.Uid), 3600, "/", "localhost", false, true)
+	//密码正确
+	aToken, rToken, _ := service.GenToken(strconv.Itoa(u.Uid), "user")
+	c.JSON(http.StatusOK, model.RespLogin{
+		Status: 200,
+		Info:   "login success",
+		Data: model.Login{
+			Uid:          u.Uid,
+			Token:        aToken,
+			RefreshToken: rToken,
+		},
+	})
 }
 
 func Logout(c *gin.Context) {
@@ -127,23 +135,37 @@ func Logout(c *gin.Context) {
 	util.RespOK(c)
 }
 
-func UserRefresh(c *gin.Context) {
-	//判断cookie过没过期
-	uid, err := c.Cookie("uid")
+func Refresh(c *gin.Context) {
+	//refresh_token
+	rToken := c.PostForm("refresh_token")
+	if rToken == "" {
+		util.RespParamErr(c)
+		return
+	}
+	_, err := service.ParseToken(rToken)
 	if err != nil {
-		util.RespUnauthorizedErr(c)
-		c.Abort()
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": 2005,
+			"info":   "无效的Token",
+		})
 		return
 	}
-	if uid == "" {
-		util.RespUnauthorizedErr(c)
-		c.Abort()
+	//生成新的token
+	newAToken, newRToken, err := service.RefreshToken(rToken)
+	if err != nil {
+		fmt.Printf("refresh err:%v", err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": 400,
+			"info":   err.Error(),
+		})
 		return
 	}
-	//没过期
-	c.Next()
-	// 设置新的cookie
-	expiration := time.Now().Add(time.Hour)
-	c.SetCookie("uid", uid, int(expiration.Unix()), "/", "localhost", false, true)
-	util.RespOK(c)
+	c.JSON(http.StatusOK, model.RespToken{
+		Status: 200,
+		Info:   "refresh token success",
+		Data: model.Token{
+			Token:        newAToken,
+			RefreshToken: newRToken,
+		},
+	})
 }

@@ -10,6 +10,7 @@ import (
 	"suning/util"
 )
 
+// ViewBalance 实现了查看账户余额接口
 func ViewBalance(c *gin.Context) {
 	//获取uid
 	uid, err := c.Cookie("uid")
@@ -32,14 +33,11 @@ func ViewBalance(c *gin.Context) {
 	util.ViewBalance(c, "view balance successfully", a)
 }
 
+// Recharge 实现了充值接口
 func Recharge(c *gin.Context) {
 	//获取uid
 	uid, err := c.Cookie("uid")
 	if err != nil {
-		util.RespUnauthorizedErr(c)
-		return
-	}
-	if uid == "" {
 		util.RespUnauthorizedErr(c)
 		return
 	}
@@ -87,10 +85,6 @@ func ViewInformation(c *gin.Context) {
 		util.RespUnauthorizedErr(c)
 		return
 	}
-	if uid == "" {
-		util.RespUnauthorizedErr(c)
-		return
-	}
 	//查询数据库
 	var i model.Information
 	i, err = service.SearchInformationByUid(uid)
@@ -106,10 +100,6 @@ func ChangeInformation(c *gin.Context) {
 	//获取uid
 	uid, err := c.Cookie("uid")
 	if err != nil {
-		util.RespUnauthorizedErr(c)
-		return
-	}
-	if uid == "" {
 		util.RespUnauthorizedErr(c)
 		return
 	}

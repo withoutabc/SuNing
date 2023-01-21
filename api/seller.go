@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
+	"net/http"
 	"strconv"
 	"suning/model"
 	"suning/service"
 	"suning/util"
-	"time"
 )
 
 func BackRegister(c *gin.Context) {
@@ -44,6 +44,7 @@ func BackRegister(c *gin.Context) {
 		Password: password,
 	})
 	if err != nil {
+		fmt.Printf("create seller err:%v", err)
 		util.RespInternalErr(c)
 		return
 	}
@@ -75,9 +76,17 @@ func BackLogin(c *gin.Context) {
 		util.NormErr(c, 300, "wrong password")
 		return
 	}
-	util.ViewSeller(c, "login successfully", s)
-	//设置cookie
-	c.SetCookie("sid", strconv.Itoa(s.Sid), 3600, "/", "localhost", false, true)
+	//密码正确
+	aToken, rToken, _ := service.GenToken(strconv.Itoa(s.Sid), "seller")
+	c.JSON(http.StatusOK, model.RespLogin{
+		Status: 200,
+		Info:   "login success",
+		Data: model.Login{
+			Uid:          s.Sid,
+			Token:        aToken,
+			RefreshToken: rToken,
+		},
+	})
 }
 
 func BackLogout(c *gin.Context) {
@@ -97,24 +106,38 @@ func BackLogout(c *gin.Context) {
 }
 
 func BackRefresh(c *gin.Context) {
-	//判断cookie过没过期
-	sid, err := c.Cookie("sid")
+	//refresh_token
+	rToken := c.PostForm("refresh_token")
+	if rToken == "" {
+		util.RespParamErr(c)
+		return
+	}
+	_, err := service.ParseToken(rToken)
 	if err != nil {
-		util.RespUnauthorizedErr(c)
-		c.Abort()
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": 2005,
+			"info":   "无效的token",
+		})
 		return
 	}
-	if sid == "" {
-		util.RespUnauthorizedErr(c)
-		c.Abort()
+	//生成新的token
+	newAToken, newRToken, err := service.RefreshToken(rToken)
+	if err != nil {
+		fmt.Printf("refresh err:%v", err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": 400,
+			"info":   err.Error(),
+		})
 		return
 	}
-	//没过期
-	c.Next()
-	// 设置新的cookie
-	expiration := time.Now().Add(time.Hour)
-	c.SetCookie("sid", sid, int(expiration.Unix()), "/", "localhost", false, true)
-	util.RespOK(c)
+	c.JSON(http.StatusOK, model.RespToken{
+		Status: 200,
+		Info:   "refresh token success",
+		Data: model.Token{
+			Token:        newAToken,
+			RefreshToken: newRToken,
+		},
+	})
 }
 
 func ViewProduct(c *gin.Context) {
