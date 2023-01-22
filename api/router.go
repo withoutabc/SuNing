@@ -22,9 +22,9 @@ func InitRouter() {
 	}
 	h := r.Group("/home")
 	{
-		h.GET("/search")
-		h.GET("/sort")
-		h.GET("/category")
+		h.GET("/search", Search)
+		h.GET("/sort", Sort)
+		h.GET("/category", Category)
 	}
 	p := r.Group("/individual/auth")
 	{
