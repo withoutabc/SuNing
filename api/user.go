@@ -63,7 +63,7 @@ func Register(c *gin.Context) {
 	}
 	//创建账户
 	err = service.CreateAccount(model.Account{
-		Uid:      u.Uid,
+		UserId:   u.UserId,
 		Username: username,
 		Balance:  0,
 	})
@@ -73,7 +73,7 @@ func Register(c *gin.Context) {
 		return
 	}
 	//创建信息表
-	err = service.CreateInformation(username, int(u.Uid))
+	err = service.CreateInformation(username, int(u.UserId))
 	if err != nil {
 		log.Printf("create information:%v", err)
 		util.RespInternalErr(c)
@@ -109,7 +109,7 @@ func Login(c *gin.Context) {
 		return
 	}
 	//密码正确
-	aToken, rToken, err := service.GenToken(strconv.Itoa(u.Uid), "user")
+	aToken, rToken, err := service.GenToken(strconv.Itoa(u.UserId), "user")
 	if err != nil {
 		fmt.Printf("refresh err:%v", err)
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -122,7 +122,7 @@ func Login(c *gin.Context) {
 		Status: 200,
 		Info:   "login success",
 		Data: model.Login{
-			Uid:          u.Uid,
+			Uid:          u.UserId,
 			Token:        aToken,
 			RefreshToken: rToken,
 		},

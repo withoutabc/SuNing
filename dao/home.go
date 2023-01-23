@@ -13,7 +13,7 @@ func SearchByKeyword(keyword string) (products []model.Product, err error) {
 	}
 	for rows.Next() {
 		var product model.Product
-		if err = rows.Scan(&product.Pid, &product.Sid, &product.Name, &product.Price, &product.Sales, &product.Rating, &product.Category, &product.Image, &product.Seller); err != nil {
+		if err = rows.Scan(&product.ProductId, &product.SellerId, &product.Name, &product.Price, &product.Sales, &product.Rating, &product.Category, &product.Image, &product.Seller); err != nil {
 			return nil, err
 		}
 		products = append(products, product)
@@ -29,7 +29,7 @@ func Sort(sortBy, order string) (products []model.Product, err error) {
 	}
 	for rows.Next() {
 		var product model.Product
-		if err = rows.Scan(&product.Pid, &product.Sid, &product.Name, &product.Price, &product.Sales, &product.Rating, &product.Category, &product.Image, &product.Seller); err != nil {
+		if err = rows.Scan(&product.ProductId, &product.SellerId, &product.Name, &product.Price, &product.Sales, &product.Rating, &product.Category, &product.Image, &product.Seller); err != nil {
 			return nil, err
 		}
 		products = append(products, product)
@@ -45,7 +45,7 @@ func Category(category string) (products []model.Product, err error) {
 	}
 	for rows.Next() {
 		var product model.Product
-		if err = rows.Scan(&product.Pid, &product.Sid, &product.Name, &product.Price, &product.Sales, &product.Rating, &product.Category, &product.Image, &product.Seller); err != nil {
+		if err = rows.Scan(&product.ProductId, &product.SellerId, &product.Name, &product.Price, &product.Sales, &product.Rating, &product.Category, &product.Image, &product.Seller); err != nil {
 			return nil, err
 		}
 		products = append(products, product)

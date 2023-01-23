@@ -6,36 +6,36 @@ import (
 	"suning/model"
 )
 
-func SearchBalanceFromUid(uid string) (a model.Account, err error) {
-	row := DB.QueryRow("select * from account where uid=?", uid)
+func SearchBalanceFromUserId(userId string) (a model.Account, err error) {
+	row := DB.QueryRow("select * from account where user_id=?", userId)
 	if err = row.Err(); row.Err() != nil {
 		return
 	}
-	err = row.Scan(&a.Username, &a.Balance, &a.Uid)
+	err = row.Scan(&a.Username, &a.Balance, &a.UserId)
 	return
 }
 
 func InsertAccount(a model.Account) (err error) {
-	_, err = DB.Exec("insert into account (username,account_balance,uid) values(?,?,?)", a.Username, 0, a.Uid)
+	_, err = DB.Exec("insert into account (username,balance,user_id) values(?,?,?)", a.Username, 0, a.UserId)
 	return
 }
 
-func UpdateAccount(uid string, accounted int) (err error) {
-	_, err = DB.Exec("update account set account_balance=? where uid=?", accounted, uid)
+func UpdateAccount(userId string, accounted int) (err error) {
+	_, err = DB.Exec("update account set balance=? where user_id=?", accounted, userId)
 	return
 }
 
-func InsertInformation(username string, uid int) (err error) {
-	_, err = DB.Exec("insert into information (username,uid) value (?,?)", username, uid)
+func InsertInformation(username string, userId int) (err error) {
+	_, err = DB.Exec("insert into information (username,user_id) value (?,?)", username, userId)
 	return
 }
 
-func SearchInformationByUid(uid string) (i model.Information, err error) {
-	row := DB.QueryRow("select * from information where uid=?", uid)
+func SearchInformationByUserId(userId string) (i model.Information, err error) {
+	row := DB.QueryRow("select * from information where user_id=?", userId)
 	if err = row.Err(); row.Err() != nil {
 		return
 	}
-	err = row.Scan(&i.Username, &i.Nickname, &i.Gender, &i.PhoneNum, &i.Email, &i.Year, &i.Month, &i.Day, &i.Avatar, &i.Uid)
+	err = row.Scan(&i.Username, &i.Nickname, &i.Gender, &i.PhoneNum, &i.Email, &i.Year, &i.Month, &i.Day, &i.Avatar, &i.UserId)
 	return
 }
 
@@ -99,8 +99,8 @@ func UpdateInformation(i model.Information) (err error) {
 		sql.WriteString(" avatar=?")
 		arg = append(arg, i.Avatar)
 	}
-	sql.WriteString(" where uid =?")
-	arg = append(arg, i.Uid)
+	sql.WriteString(" where user_id =?")
+	arg = append(arg, i.UserId)
 	fmt.Println(sql.String())
 	_, err = DB.Exec(sql.String(), arg...)
 	return

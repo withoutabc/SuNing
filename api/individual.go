@@ -14,9 +14,9 @@ import (
 // ViewBalance 实现了查看账户余额接口
 func ViewBalance(c *gin.Context) {
 	//获取uid
-	uid := c.Param("uid")
+	userId := c.Param("user_id")
 	//查询数据，传入结构体
-	a, err := service.SearchBalancerFromUid(uid)
+	a, err := service.SearchBalancerFromUserId(userId)
 	if err != nil && err != sql.ErrNoRows {
 		log.Printf("search user error:%v", err)
 		util.RespInternalErr(c)
@@ -32,7 +32,7 @@ func ViewBalance(c *gin.Context) {
 // Recharge 实现了充值接口
 func Recharge(c *gin.Context) {
 	//获取uid
-	uid := c.Param("uid")
+	userId := c.Param("user_id")
 	//获取充值金额
 	account, err := strconv.Atoi(c.Query("account"))
 	if err != nil {
@@ -45,7 +45,7 @@ func Recharge(c *gin.Context) {
 	}
 	//查询用户目前余额
 	var a model.Account
-	a, err = service.SearchBalancerFromUid(uid)
+	a, err = service.SearchBalancerFromUserId(userId)
 	if err != nil && err != sql.ErrNoRows {
 		log.Printf("search account error:%v", err)
 		util.RespInternalErr(c)
@@ -53,14 +53,14 @@ func Recharge(c *gin.Context) {
 	}
 	//充值，写入数据库
 	accounted := a.Balance + account
-	err = service.RechargeToAccount(uid, accounted)
+	err = service.RechargeToAccount(userId, accounted)
 	if err != nil {
 		log.Printf("recharge error:%v", err)
 		util.RespInternalErr(c)
 		return
 	}
 	//查询用户目前余额
-	a, err = service.SearchBalancerFromUid(uid)
+	a, err = service.SearchBalancerFromUserId(userId)
 	if err != nil && err != sql.ErrNoRows {
 		log.Printf("search account error:%v", err)
 		util.RespInternalErr(c)
@@ -72,9 +72,9 @@ func Recharge(c *gin.Context) {
 // ViewInformation 实现了查看个人信息接口
 func ViewInformation(c *gin.Context) {
 	//获取uid
-	uid := c.Param("uid")
+	userId := c.Param("user_id")
 	//查询数据库
-	i, err := service.SearchInformationByUid(uid)
+	i, err := service.SearchInformationByUserId(userId)
 	if err != nil && err != sql.ErrNoRows {
 		log.Printf("search information error:%v", err)
 		util.RespInternalErr(c)
@@ -90,8 +90,8 @@ func ViewInformation(c *gin.Context) {
 // ChangeInformation 实现了修改个人信息接口
 func ChangeInformation(c *gin.Context) {
 	//获取uid
-	uid := c.Param("uid")
-	Uid, _ := strconv.Atoi(uid)
+	userId := c.Param("user_id")
+	UserId, _ := strconv.Atoi(userId)
 	//传入要修改的信息
 	i := model.Information{
 		Nickname: c.PostForm("nickname"),    //最多15个字符
@@ -102,7 +102,7 @@ func ChangeInformation(c *gin.Context) {
 		Month:    c.PostForm("month"),       //1-12
 		Day:      c.PostForm("day"),         //1-31
 		Avatar:   c.PostForm("avatar"),
-		Uid:      Uid,
+		UserId:   UserId,
 	}
 	//分析是否符合格式
 	//if len(i.Nickname) > 15 {

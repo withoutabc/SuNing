@@ -79,7 +79,7 @@ func BackLogin(c *gin.Context) {
 		return
 	}
 	//密码正确
-	aToken, rToken, err := service.GenToken(strconv.Itoa(s.Sid), "seller")
+	aToken, rToken, err := service.GenToken(strconv.Itoa(s.SellerId), "seller")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status": 400,
@@ -90,7 +90,7 @@ func BackLogin(c *gin.Context) {
 		Status: 200,
 		Info:   "login success",
 		Data: model.Login{
-			Uid:          s.Sid,
+			Uid:          s.SellerId,
 			Token:        aToken,
 			RefreshToken: rToken,
 		},
@@ -139,9 +139,9 @@ func BackLogout(c *gin.Context) {
 // ViewProduct 实现了后台查看商品接口
 func ViewProduct(c *gin.Context) {
 	//获取卖家id
-	sid := c.Param("sid")
+	SellerId := c.Param("seller_id")
 	//查询卖家的商品
-	products, err := service.SearchNameBySid(sid)
+	products, err := service.SearchNameBySellerId(SellerId)
 	if err != nil {
 		fmt.Printf("view product err:%v", err)
 		util.RespInternalErr(c)
@@ -157,9 +157,9 @@ func ViewProduct(c *gin.Context) {
 // AddProduct 实现了后台添加商品接口
 func AddProduct(c *gin.Context) {
 	//获取卖家id
-	sid := c.Param("sid")
+	SellerId := c.Param("seller_id")
 	//根据sid查找seller
-	s, err := service.SearchSellerBySid(sid)
+	s, err := service.SearchSellerBySellerId(SellerId)
 	if err != nil {
 		fmt.Printf("search seller:%v", err)
 		util.RespInternalErr(c)
@@ -167,7 +167,7 @@ func AddProduct(c *gin.Context) {
 	}
 	//获取商品信息
 	p := model.Product{
-		Sid:      sid,
+		SellerId: SellerId,
 		Seller:   s.Seller,
 		Name:     c.PostForm("name"),
 		Price:    c.PostForm("price"),
@@ -182,7 +182,7 @@ func AddProduct(c *gin.Context) {
 	}
 	//同一商家的商品名不可重复
 	var products []model.Product
-	products, err = service.SearchNameBySid(sid)
+	products, err = service.SearchNameBySellerId(SellerId)
 	for _, product := range products {
 		if product.Name == p.Name {
 			util.NormErr(c, 400, "product has existed")
@@ -202,10 +202,10 @@ func AddProduct(c *gin.Context) {
 // UpdateProduct 实现了后台修改商品信息接口
 func UpdateProduct(c *gin.Context) {
 	//获取卖家id
-	sid := c.Param("sid")
+	SellerId := c.Param("seller_id")
 	//获取要修改的数据
 	p := model.Product{
-		Sid:      sid,
+		SellerId: SellerId,
 		Name:     c.PostForm("name"),
 		Price:    c.PostForm("price"),
 		Sales:    c.PostForm("sales"),
@@ -220,7 +220,7 @@ func UpdateProduct(c *gin.Context) {
 	}
 	//判断name是否存在
 	var count int
-	products, err := service.SearchNameBySid(sid)
+	products, err := service.SearchNameBySellerId(SellerId)
 	for _, product := range products {
 		if product.Name == p.Name {
 			count = 1
@@ -250,12 +250,12 @@ func UpdateProduct(c *gin.Context) {
 // DeleteProduct 实现了后台删除商品接口
 func DeleteProduct(c *gin.Context) {
 	//获取卖家id
-	sid := c.Param("sid")
+	SellerId := c.Param("seller_id")
 	//获取要删除的商品名称
 	name := c.Query("name")
 	//判断name是否存在
 	var count int
-	products, err := service.SearchNameBySid(sid)
+	products, err := service.SearchNameBySellerId(SellerId)
 	for _, product := range products {
 		if product.Name == name {
 			count = 1
@@ -267,7 +267,7 @@ func DeleteProduct(c *gin.Context) {
 		return
 	}
 	//删除商品
-	err = service.DeleteProduct(sid, name)
+	err = service.DeleteProduct(SellerId, name)
 	if err != nil {
 		log.Printf("delete product err:%v", err)
 		util.RespInternalErr(c)

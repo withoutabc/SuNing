@@ -18,8 +18,8 @@ func keyFunc(*jwt.Token) (i interface{}, err error) {
 func GenToken(uid, role string) (aToken, rToken string, err error) {
 	// 创建一个我们自己的声明
 	c := model.MyClaims{
-		Uid:  uid,
-		Role: role,
+		UserId: uid,
+		Role:   role,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour).Unix(), // 过期时间
 			Issuer:    "YJX",                            // 签发人
@@ -46,7 +46,7 @@ func RefreshToken(rToken string) (newAToken, newRToken string, err error) {
 		}
 	}
 	//生成新的token
-	newAToken, newRToken, err = GenToken(claims.Uid, claims.Role)
+	newAToken, newRToken, err = GenToken(claims.UserId, claims.Role)
 	if err != nil {
 		return "", "", err
 	}
