@@ -160,10 +160,10 @@ func AddToCollection(c *gin.Context) {
 		util.RespParamErr(c)
 		return
 	}
-	//name不重复
-	exist, err := service.SearchIfNameExist(userId, name)
+	//collection不重复
+	exist, err := service.SearchIfCollectionExist(userId, name)
 	if err != nil {
-		fmt.Printf("search name exist err:%v", err)
+		fmt.Printf("search collection exist err:%v", err)
 		util.RespInternalErr(c)
 		return
 	}
@@ -217,10 +217,10 @@ func DeleteCollection(c *gin.Context) {
 		util.RespParamErr(c)
 		return
 	}
-	//name存在
-	exist, err := service.SearchIfNameExist(userId, name)
+	//collection存在
+	exist, err := service.SearchIfCollectionExist(userId, name)
 	if err != nil {
-		fmt.Printf("search name exist err:%v", err)
+		fmt.Printf("search collection exist err:%v", err)
 		util.RespInternalErr(c)
 		return
 	}
@@ -228,6 +228,14 @@ func DeleteCollection(c *gin.Context) {
 		util.NormErr(c, 400, "not exist name")
 		return
 	}
+	//删除收藏
+	err = service.DeleteCollection(userId, name)
+	if err != nil {
+		fmt.Printf("delete collection exist err:%v", err)
+		util.RespInternalErr(c)
+		return
+	}
+	util.RespOK(c, "delete collection success")
 }
 
 // ViewProductDetail 实现查看商品详情接口
@@ -238,25 +246,63 @@ func ViewProductDetail(c *gin.Context) {
 		util.RespParamErr(c)
 		return
 	}
-
+	//查看商品详情
+	detail, err := service.SearchDetailByProductId(productId)
+	if err != nil {
+		fmt.Printf("search detail err:%v", err)
+		util.RespInternalErr(c)
+		return
+	}
+	c.JSON(http.StatusOK, model.RespDetail{
+		Status: 200,
+		Info:   "view product detail success",
+		Data:   detail,
+	})
 }
 
-// GiveComment 实现评价接口
-func GiveComment(c *gin.Context) {
+// GiveReview 实现评价接口
+func GiveReview(c *gin.Context) {
+	//获取用户id
+	userId := c.Param("user_id")
+	if userId == "" {
+		util.RespParamErr(c)
+		return
+	}
+	//获取评论信息
+	review := model.Review{
+		UserId:  userId,
+		Name:    c.PostForm("name"),
+		Content: c.PostForm("content"),
+		Rating:  c.PostForm("rating"),
+	}
+	//插入数据
+	err := service.InsertReview(review)
+	if err != nil {
+		fmt.Printf("insert view err:%v", err)
+		util.RespInternalErr(c)
+		return
+	}
+	util.RespOK(c, "give review success")
+}
+
+// ViewReview 实现查看评价接口
+func ViewReview(c *gin.Context) {
 	//获取商品id
 	productId := c.Param("product_id")
 	if productId == "" {
 		util.RespParamErr(c)
 		return
 	}
-}
-
-// ViewComment 实现查看评价接口
-func ViewComment(c *gin.Context) {
-	//获取商品id
-	productId := c.Param("product_id")
-	if productId == "" {
-		util.RespParamErr(c)
+	//查看评价
+	reviews, err := service.SearchReviewByProductId(productId)
+	if err != nil {
+		fmt.Printf("search review err:%v", err)
+		util.RespInternalErr(c)
 		return
 	}
+	c.JSON(http.StatusOK, model.RespReview{
+		Status: 200,
+		Info:   "view review success",
+		Data:   reviews,
+	})
 }

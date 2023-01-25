@@ -34,7 +34,7 @@ func Recharge(c *gin.Context) {
 	//获取uid
 	userId := c.Param("user_id")
 	//获取充值金额
-	account, err := strconv.Atoi(c.Query("account"))
+	account, err := strconv.ParseFloat(c.Query("account"), 64)
 	if err != nil {
 		util.NormErr(c, 400, "invalid recharge")
 		return
@@ -51,8 +51,9 @@ func Recharge(c *gin.Context) {
 		util.RespInternalErr(c)
 		return
 	}
+	initialAccount := float64(a.Balance)
 	//充值，写入数据库
-	accounted := a.Balance + account
+	accounted := initialAccount + account
 	err = service.RechargeToAccount(userId, accounted)
 	if err != nil {
 		log.Printf("recharge error:%v", err)

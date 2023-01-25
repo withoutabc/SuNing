@@ -13,7 +13,7 @@ func CreateAccount(a model.Account) error {
 	err := dao.InsertAccount(a)
 	return err
 }
-func RechargeToAccount(username string, accounted int) (err error) {
+func RechargeToAccount(username string, accounted float64) (err error) {
 	err = dao.UpdateAccount(username, accounted)
 	return
 }

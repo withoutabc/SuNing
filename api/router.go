@@ -8,6 +8,7 @@ import (
 func InitRouter() {
 	r := gin.Default()
 	r.Use(middleware.Cors())
+	//登陆注册
 	u := r.Group("/user")
 	{
 		u.POST("/register", Register)
@@ -17,34 +18,41 @@ func InitRouter() {
 			a.Use(middleware.JWTAuthMiddleware(), middleware.UserAuth())
 			a.POST("/refresh", Refresh)
 		}
-
 	}
+	//主页
 	h := r.Group("/home")
 	{
 		h.GET("/search", Search)
 		h.GET("/sort", Sort)
 		h.GET("/category", Category)
 	}
+	//商品详情页
 	{
 		r.GET("/product/style/:product_id", SearchStyle)
 		r.GET("/product/detail/:product_id", ViewProductDetail)
-		r.POST("/cart/add/:user_id", AddToCart)
-		r.GET("/cart/view/:user_id", ViewCart)
-		r.DELETE("/cart/delete/:user_id", DeleteCart)
-		r.POST("/collection/add/:user_id", AddToCollection)
-		r.GET("/collection/view/:user_id", ViewCollection)
-		r.DELETE("/collection/delete/:user_id", DeleteCollection)
-		r.POST("/comment/add/:product_id", GiveComment)
-		r.GET("/comment/view/:product_id", ViewComment)
+		r.GET("/review/view/:product_id", ViewReview)
+		{
+			x := r.Group("")
+			x.Use(middleware.JWTAuthMiddleware(), middleware.UserAuth())
+			x.POST("/cart/add/:user_id", AddToCart)
+			x.GET("/cart/view/:user_id", ViewCart)
+			x.DELETE("/cart/delete/:user_id", DeleteCart)
+			x.POST("/collection/add/:user_id", AddToCollection)
+			x.GET("/collection/view/:user_id", ViewCollection)
+			x.DELETE("/collection/delete/:user_id", DeleteCollection)
+			x.POST("/review/add/:user_id", GiveReview)
+		}
 	}
-	p := r.Group("/individual/auth")
+	//个人页面
+	i := r.Group("/individual/auth")
 	{
-		p.Use(middleware.JWTAuthMiddleware(), middleware.UserAuth())
-		p.GET("/balance/:user_id", ViewBalance)
-		p.POST("/recharge/:user_id", Recharge)
-		p.GET("/information/:user_id", ViewInformation)
-		p.PUT("/modify/:user_id", ChangeInformation)
+		i.Use(middleware.JWTAuthMiddleware(), middleware.UserAuth())
+		i.GET("/balance/:user_id", ViewBalance)
+		i.POST("/recharge/:user_id", Recharge)
+		i.GET("/information/:user_id", ViewInformation)
+		i.PUT("/modify/:user_id", ChangeInformation)
 	}
+	//后台管理
 	b := r.Group("/seller")
 	{
 		b.POST("/register", BackRegister)

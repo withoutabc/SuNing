@@ -49,3 +49,23 @@ func SearchIfCollectionExist(userId, name string) (exist bool, err error) {
 	exist, err = dao.SearchIfCollectionExist(userId, name)
 	return
 }
+
+func DeleteCollection(userId, name string) (err error) {
+	err = dao.DeleteCollection(userId, name)
+	return
+}
+
+func SearchDetailByProductId(productId string) (detail model.Detail, err error) {
+	detail, err = dao.SearchDetailByProductId(productId)
+	return
+}
+
+func InsertReview(review model.Review) (err error) {
+	err = dao.InsertReview(review)
+	return
+}
+
+func SearchReviewByProductId(productId string) (reviews []model.Review, err error) {
+	reviews, err = dao.SearchReviewByProductId(productId)
+	return
+}

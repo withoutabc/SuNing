@@ -20,7 +20,7 @@ func InsertAccount(a model.Account) (err error) {
 	return
 }
 
-func UpdateAccount(userId string, accounted int) (err error) {
+func UpdateAccount(userId string, accounted float64) (err error) {
 	_, err = DB.Exec("update account set balance=? where user_id=?", accounted, userId)
 	return
 }

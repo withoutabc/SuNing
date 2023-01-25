@@ -3,6 +3,7 @@ package dao
 import (
 	"database/sql"
 	"suning/model"
+	"time"
 )
 
 func SearchStyleByProductId(productId string) (Styles []model.Style, err error) {
@@ -101,4 +102,37 @@ func SearchIfCollectionExist(userId, name string) (exist bool, err error) {
 		return
 	}
 	return count > 0, nil
+}
+
+func DeleteCollection(userId, name string) (err error) {
+	_, err = DB.Exec("delete * from collection where user_id=? and name=?", userId, name)
+	return
+}
+
+func SearchDetailByProductId(productId string) (detail model.Detail, err error) {
+	var row *sql.Row
+	row = DB.QueryRow("select * from product_detail where product_id=?", productId)
+	err = row.Scan(&detail.DetailId, &detail.Name, &detail.Seller, &detail.Category, &detail.Price, &detail.Stock, &detail.Description, &detail.Image, &detail.ProductId)
+	return
+}
+
+func InsertReview(review model.Review) (err error) {
+	_, err = DB.Exec("insert into review (user_id,name,content,create_time,rating) values (?,?,?,?,?)", review.UserId, review.Name, review.Content, time.Now(), review.Rating)
+	return
+}
+
+func SearchReviewByProductId(productId string) (reviews []model.Review, err error) {
+	var rows *sql.Rows
+	rows, err = DB.Query("select * from review where product_id=?", productId)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var review model.Review
+		if err = rows.Scan(&review.ReviewId, &review.UserId, &review.Name, &review.Content, &review.CreateTime, &review.Rating, &review.ProductId); err != nil {
+			return nil, err
+		}
+		reviews = append(reviews, review)
+	}
+	return
 }
