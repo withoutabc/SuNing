@@ -12,3 +12,9 @@ type Information struct {
 	Day      string `json:"day"`
 	Avatar   string `json:"avatar"`
 }
+
+type RespInformation struct {
+	Status int         `json:"status"`
+	Info   string      `json:"info"`
+	Data   Information `json:"data"`
+}

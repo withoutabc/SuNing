@@ -5,3 +5,9 @@ type Account struct {
 	Username string `json:"username"`
 	Balance  int    `json:"balance"`
 }
+
+type RespBalance struct {
+	Status int     `json:"status"`
+	Info   string  `json:"info"`
+	Data   Account `json:"data"`
+}

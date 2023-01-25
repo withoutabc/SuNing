@@ -97,9 +97,6 @@ func BackLogin(c *gin.Context) {
 	})
 }
 
-func BackLogout(c *gin.Context) {
-}
-
 //// BackRefresh 实现了后台刷新token接口
 //func BackRefresh(c *gin.Context) {
 //	//refresh_token
@@ -158,6 +155,11 @@ func ViewProduct(c *gin.Context) {
 func AddProduct(c *gin.Context) {
 	//获取卖家id
 	SellerId := c.Param("seller_id")
+	sellerId, err := strconv.Atoi(SellerId)
+	if err != nil {
+		util.NormErr(c, 400, "invalid sellerId")
+		return
+	}
 	//根据sid查找seller
 	s, err := service.SearchSellerBySellerId(SellerId)
 	if err != nil {
@@ -167,7 +169,7 @@ func AddProduct(c *gin.Context) {
 	}
 	//获取商品信息
 	p := model.Product{
-		SellerId: SellerId,
+		SellerId: sellerId,
 		Seller:   s.Seller,
 		Name:     c.PostForm("name"),
 		Price:    c.PostForm("price"),
@@ -203,9 +205,14 @@ func AddProduct(c *gin.Context) {
 func UpdateProduct(c *gin.Context) {
 	//获取卖家id
 	SellerId := c.Param("seller_id")
+	sellerId, err := strconv.Atoi(SellerId)
+	if err != nil {
+		util.NormErr(c, 400, "invalid sellerId")
+		return
+	}
 	//获取要修改的数据
 	p := model.Product{
-		SellerId: SellerId,
+		SellerId: sellerId,
 		Name:     c.PostForm("name"),
 		Price:    c.PostForm("price"),
 		Sales:    c.PostForm("sales"),

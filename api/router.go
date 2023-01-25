@@ -16,7 +16,6 @@ func InitRouter() {
 		{
 			a.Use(middleware.JWTAuthMiddleware(), middleware.UserAuth())
 			a.POST("/refresh", Refresh)
-			a.POST("/logout", Logout)
 		}
 
 	}
@@ -31,8 +30,10 @@ func InitRouter() {
 		r.GET("/product/detail/:product_id", ViewProductDetail)
 		r.POST("/cart/add/:user_id", AddToCart)
 		r.GET("/cart/view/:user_id", ViewCart)
+		r.DELETE("/cart/delete/:user_id", DeleteCart)
 		r.POST("/collection/add/:user_id", AddToCollection)
 		r.GET("/collection/view/:user_id", ViewCollection)
+		r.DELETE("/collection/delete/:user_id", DeleteCollection)
 		r.POST("/comment/add/:product_id", GiveComment)
 		r.GET("/comment/view/:product_id", ViewComment)
 	}
@@ -52,7 +53,6 @@ func InitRouter() {
 		{
 			a.Use(middleware.JWTAuthMiddleware(), middleware.SellerAuth())
 			a.GET("/refresh", Refresh)
-			a.POST("/logout", BackLogout)
 			a.GET("/view/:seller_id", ViewProduct)
 			a.POST("/add/:seller_id", AddProduct)
 			a.PUT("/update/:seller_id", UpdateProduct)

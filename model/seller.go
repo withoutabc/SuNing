@@ -8,7 +8,7 @@ type Seller struct {
 
 type Product struct {
 	ProductId int    `json:"product_id"`
-	SellerId  string `json:"seller_id"`
+	SellerId  int    `json:"seller_id"`
 	Seller    string `json:"seller"`
 	Name      string `json:"name"`
 	Price     string `json:"price"`

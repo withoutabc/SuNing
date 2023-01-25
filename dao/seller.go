@@ -98,7 +98,7 @@ func DeleteProduct(sellerId string, name string) (err error) {
 	return
 }
 
-// SearchSellerBySellerId 数据库
+// SearchSellerBySellerId 数据库查找
 func SearchSellerBySellerId(sellerId string) (s model.Seller, err error) {
 	row := DB.QueryRow("select * from seller where seller_id=?", sellerId)
 	if err = row.Err(); row.Err() != nil {
