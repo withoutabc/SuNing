@@ -22,26 +22,33 @@ func InitRouter() {
 	//主页
 	h := r.Group("/home")
 	{
-		h.GET("/search", Search)
-		h.GET("/sort", Sort)
+		h.GET("/search", SearchAndSort)
 		h.GET("/category", Category)
 	}
-	//商品详情页
+	//商品详情页（购物车、我的收藏、评价）
 	{
 		r.GET("/product/style/:product_id", SearchStyle)
 		r.GET("/product/detail/:product_id", ViewProductDetail)
 		r.GET("/review/view/:product_id", ViewReview)
 		{
-			x := r.Group("")
+			x := r.Group("/auth")
 			x.Use(middleware.JWTAuthMiddleware(), middleware.UserAuth())
 			x.POST("/cart/add/:user_id", AddToCart)
 			x.GET("/cart/view/:user_id", ViewCart)
 			x.DELETE("/cart/delete/:user_id", DeleteCart)
+			x.POST("/cart/pay/:user_id")
 			x.POST("/collection/add/:user_id", AddToCollection)
 			x.GET("/collection/view/:user_id", ViewCollection)
 			x.DELETE("/collection/delete/:user_id", DeleteCollection)
 			x.POST("/review/add/:user_id", GiveReview)
 		}
+	}
+	//店铺详情页
+	{
+		r.GET("/announcement/view/:seller_id", ViewAnnouncement)
+		r.GET("/store/sort/:seller_id", StoreSort)
+		r.GET("/store/category/:seller_id", StoreCategory)
+		r.PUT("/auth/announcement/update/:seller_id", middleware.JWTAuthMiddleware(), middleware.SellerAuth(), UpdateAnnouncement)
 	}
 	//个人页面
 	i := r.Group("/individual/auth")

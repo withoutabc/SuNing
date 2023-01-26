@@ -5,9 +5,9 @@ import (
 	"suning/model"
 )
 
-// SearchSellerByName 通过商品名称查询对应商品信息
-func SearchSellerByName(seller string) (s model.Seller, err error) {
-	s, err = dao.SearchSellerByName(seller)
+// SearchNameBySeller 通过商品名称查询对应商品信息
+func SearchNameBySeller(seller string) (s model.Seller, err error) {
+	s, err = dao.SearchNameBySeller(seller)
 	return
 }
 

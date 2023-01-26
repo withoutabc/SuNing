@@ -10,8 +10,8 @@ func SearchProduct(keyword string) (products []model.Product, err error) {
 	return
 }
 
-func Sort(sortBy, order string) (products []model.Product, err error) {
-	products, err = dao.Sort(sortBy, order)
+func SearchAndSort(keyword, sortBy, order string) (products []model.Product, err error) {
+	products, err = dao.SearchAndSort(keyword, sortBy, order)
 	return
 }
 

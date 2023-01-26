@@ -6,7 +6,7 @@ import (
 	"suning/model"
 )
 
-func SearchSellerByName(seller string) (s model.Seller, err error) {
+func SearchNameBySeller(seller string) (s model.Seller, err error) {
 	row := DB.QueryRow("select * from seller where seller=?", seller)
 	if err = row.Err(); row.Err() != nil {
 		return

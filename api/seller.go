@@ -23,7 +23,7 @@ func BackRegister(c *gin.Context) {
 		return
 	}
 	//检索数据库
-	u, err := service.SearchSellerByName(seller)
+	u, err := service.SearchNameBySeller(seller)
 	if err != nil && err != sql.ErrNoRows {
 		log.Printf("search seller error:%v", err)
 		util.RespInternalErr(c)
@@ -49,6 +49,20 @@ func BackRegister(c *gin.Context) {
 		util.RespInternalErr(c)
 		return
 	}
+	//查询卖家id
+	s, err := service.SearchNameBySeller(seller)
+	if err != nil {
+		fmt.Printf("search name err:%v", err)
+		util.RespInternalErr(c)
+		return
+	}
+	//创建公告
+	err = service.InsertAnnouncement(strconv.Itoa(s.SellerId))
+	if err != nil {
+		fmt.Printf("create announcement err:%v", err)
+		util.RespInternalErr(c)
+		return
+	}
 	util.RespOK(c, "register success")
 }
 
@@ -62,7 +76,7 @@ func BackLogin(c *gin.Context) {
 		return
 	}
 	//查找用户
-	s, err := service.SearchSellerByName(seller)
+	s, err := service.SearchNameBySeller(seller)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			util.NormErr(c, 300, "user not exist")
