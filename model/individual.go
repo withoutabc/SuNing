@@ -18,3 +18,19 @@ type RespInformation struct {
 	Info   string      `json:"info"`
 	Data   Information `json:"data"`
 }
+
+type Address struct {
+	AddressId        string `json:"address_id"`
+	UserId           string `json:"user_id"`
+	RecipientName    string `json:"recipient_name"`
+	RecipientPhone   string `json:"recipient_phone"`
+	Province         string `json:"province"`
+	City             string `json:"city"`
+	StateOrCommunity string `json:"state_or_community"`
+}
+
+type RespAddress struct {
+	Status int       `json:"status"`
+	Info   string    `json:"info"`
+	Data   []Address `json:"address"`
+}

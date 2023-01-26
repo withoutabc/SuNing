@@ -69,9 +69,3 @@ func SearchReviewByProductId(productId string) (reviews []model.Review, err erro
 	reviews, err = dao.SearchReviewByProductId(productId)
 	return
 }
-
-func CartPay(payProducts []string) (totalPrice float64, err error) {
-	totalPrice, err = dao.CartPay(payProducts)
-	return
-
-}

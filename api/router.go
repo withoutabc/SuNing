@@ -58,13 +58,26 @@ func InitRouter() {
 		i.POST("/recharge/:user_id", Recharge)
 		i.GET("/information/:user_id", ViewInformation)
 		i.PUT("/modify/:user_id", ChangeInformation)
+		i.POST("/address/add/:user_id", AddAddress)
+		i.GET("/address/view/:user_id", ViewAddress)
+		i.PUT("/address/update/:user_id", UpdateAddress)
+		i.DELETE("/address/delete/:user_id", DeleteAddress)
+	}
+	//订单
+	b := r.Group("/order/auth")
+	{
+		b.Use(middleware.JWTAuthMiddleware(), middleware.UserAuth())
+		b.POST("/add/:user_id", GenOrder)
+		b.POST("/settle/:user_id", SettleBill)
+		b.GET("/view/:user_id", SearchOrder)
+		b.PUT("/update/:user_id", UpdateOrderStatus)
 	}
 	//后台管理
-	b := r.Group("/seller")
+	s := r.Group("/seller")
 	{
-		b.POST("/register", BackRegister)
-		b.POST("/login", BackLogin)
-		a := b.Group("/auth")
+		s.POST("/register", BackRegister)
+		s.POST("/login", BackLogin)
+		a := s.Group("/auth")
 		{
 			a.Use(middleware.JWTAuthMiddleware(), middleware.SellerAuth())
 			a.GET("/refresh", Refresh)
@@ -75,6 +88,5 @@ func InitRouter() {
 		}
 
 	}
-
 	r.Run()
 }
