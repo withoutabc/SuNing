@@ -130,6 +130,15 @@ func SearchAddress(userId string) (addresses []model.Address, err error) {
 	return
 }
 
+func SearchAddressById(addressId string) (address model.Address, err error) {
+	row := DB.QueryRow("select * from address where address_id=?", addressId)
+	if err = row.Err(); err != nil {
+		return model.Address{}, err
+	}
+	err = row.Scan(&address.AddressId, &address.UserId, &address.RecipientName, &address.RecipientPhone, &address.Province, &address.City, &address.StateOrCommunity)
+	return address, err
+}
+
 func UpdateAddress(a model.Address) (err error) {
 	_, err = DB.Exec("update address set recipient_name=?,recipient_phone=?,province=?,city=?,street_or_community=? where user_id=?", a.RecipientName, a.RecipientPhone, a.Province, a.City, a.StateOrCommunity, a.UserId)
 	return

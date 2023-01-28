@@ -46,6 +46,11 @@ func SearchAddress(userId string) (addresses []model.Address, err error) {
 	return
 }
 
+func SearchAddressById(addressId string) (address model.Address, err error) {
+	address, err = dao.SearchAddressById(addressId)
+	return
+}
+
 func UpdateAddress(a model.Address) (err error) {
 	err = dao.UpdateAddress(a)
 	return

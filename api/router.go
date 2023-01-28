@@ -36,7 +36,6 @@ func InitRouter() {
 			x.POST("/cart/add/:user_id", AddToCart)
 			x.GET("/cart/view/:user_id", ViewCart)
 			x.DELETE("/cart/delete/:user_id", DeleteCart)
-			x.POST("/cart/pay/:user_id")
 			x.POST("/collection/add/:user_id", AddToCollection)
 			x.GET("/collection/view/:user_id", ViewCollection)
 			x.DELETE("/collection/delete/:user_id", DeleteCollection)
@@ -71,6 +70,7 @@ func InitRouter() {
 		b.POST("/settle/:user_id", SettleBill)
 		b.GET("/view/:user_id", SearchOrder)
 		b.PUT("/update/:user_id", UpdateOrderStatus)
+		b.GET("/view/:user_id", ViewOrder)
 	}
 	//后台管理
 	s := r.Group("/seller")
