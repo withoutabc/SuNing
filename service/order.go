@@ -78,3 +78,14 @@ func ViewOrder(userId string) (orders []model.Order, err error) {
 	orders, err = dao.ViewOrder(userId)
 	return
 }
+
+func DeleteOrder(orderId string) (err error) {
+	err = dao.DeleteOrder(orderId)
+
+	return
+}
+
+func DeleteOrderDetail(orderId string) (err error) {
+	err = dao.DeleteOrderDetail(orderId)
+	return
+}

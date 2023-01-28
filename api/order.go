@@ -234,3 +234,28 @@ func ViewOrder(c *gin.Context) {
 		OrderDetail: orderDetailsS,
 	})
 }
+
+// DeleteOrder 删除订单
+func DeleteOrder(c *gin.Context) {
+	//获取信息
+	userId := c.Param("user_id")
+	if userId == "" {
+		util.RespParamErr(c)
+		return
+	}
+	orderId := c.Query("order_id")
+	//删除
+	err := service.DeleteOrder(orderId)
+	if err != nil {
+		fmt.Printf("delete order err:%v", err)
+		util.RespInternalErr(c)
+		return
+	}
+	err = service.DeleteOrderDetail(orderId)
+	if err != nil {
+		fmt.Printf("delete order detail err:%v", err)
+		util.RespInternalErr(c)
+		return
+	}
+	util.RespOK(c, "delete order success")
+}

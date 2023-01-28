@@ -121,3 +121,13 @@ func SearchTotalPriceById(orderId string) (totalPrice string, err error) {
 	err = row.Scan(&totalPrice)
 	return totalPrice, err
 }
+
+func DeleteOrder(orderId string) (err error) {
+	_, err = DB.Exec("delete * from order where order_id=?", orderId)
+	return
+}
+
+func DeleteOrderDetail(orderId string) (err error) {
+	_, err = DB.Exec("delete * from order_detail where order_id=?", orderId)
+	return
+}
