@@ -52,7 +52,7 @@ POST user/register
 | 200    | “register success”   | 登录成功                     |
 | 400    | "different password" | 密码不一致                   |
 | 400    | "user has existed"   | 用户名已存在                 |
-| 500    | "internal error"     | 数据库增删查改或生成盐值错误 |
+| 500    | "internal error"     | 数据库增删查改错误 |
 
 ```json
 {
