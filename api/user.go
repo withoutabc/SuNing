@@ -53,7 +53,7 @@ func Register(c *gin.Context) {
 	u, err = service.SearchUserByUsername(username)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			util.NormErr(c, 300, "user don't exist")
+			util.NormErr(c, 300, "user has exist")
 		} else {
 			log.Printf("search user error:%v", err)
 			util.RespInternalErr(c)
@@ -127,10 +127,6 @@ func Login(c *gin.Context) {
 			RefreshToken: rToken,
 		},
 	})
-}
-
-func Logout(c *gin.Context) {
-
 }
 
 // Refresh 实现了刷新token接口

@@ -23,7 +23,7 @@ func SearchByKeyword(keyword string) (products []model.Product, err error) {
 
 func SearchAndSort(keyword, sortBy, order string) (products []model.Product, err error) {
 	var rows *sql.Rows
-	rows, err = DB.Query("select * from product where name like " + "%" + keyword + "%" + " order by " + sortBy + " " + order)
+	rows, err = DB.Query("select * from product where name like ?"+" order by "+sortBy+" "+order, "%"+keyword+"%")
 	if err != nil {
 		return nil, err
 	}

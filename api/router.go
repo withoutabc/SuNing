@@ -68,7 +68,7 @@ func InitRouter() {
 		b.Use(middleware.JWTAuthMiddleware(), middleware.UserAuth())
 		b.POST("/add/:user_id", GenOrder)
 		b.POST("/settle/:user_id", SettleBill)
-		b.GET("/view/:user_id", SearchOrder)
+		b.GET("/search/:user_id", SearchOrder)
 		b.PUT("/update/:user_id", UpdateOrderStatus)
 		b.GET("/view/:user_id", ViewOrder)
 		b.DELETE("/delete/:user_id", DeleteOrder)
