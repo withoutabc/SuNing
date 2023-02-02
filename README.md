@@ -23,17 +23,17 @@
 
 ### 注册
 
-**请求路径**：
+**请求路径**
 
 ```http
 POST /user/register
 ```
 
-**请求头：**
+**请求头**
 
 无
 
-**请求参数：**
+**请求参数**
 
 | 名称             | 位置 | 类型   | 必选 | 说明     |
 | ---------------- | ---- | ------ | ---- | -------- |
@@ -41,11 +41,11 @@ POST /user/register
 | password         | body | string | 是   | 密码     |
 | confirm_password | body | string | 是   | 确认密码 |
 
-**返回参数：**
+**返回参数**
 
 无
 
-**返回示例：**
+**返回示例**
 
 | status | info                 | 说明                         |
 | ------ | -------------------- | ---------------------------- |
@@ -110,32 +110,32 @@ POST /user/login
 ```
 ### 刷新token
 
-##### 请求路径：
+**请求路径**
 
 ```http
 POST /user/auth/refresh
 ```
 
-**请求头：**
+**请求头**
 
 | 字段名        | 必选 | 类型          | 说明      |
 | ------------- | ---- | ------------- | --------- |
 | Authorization | 是   | Bearer $token | 验证token |
 
-**请求参数：**
+**请求参数**
 
 | 名称          | 位置 | 类型   | 必选 | 说明      |
 | ------------- | ---- | ------ | ---- | --------- |
 | refresh_token | body | string | 是   | 刷新token |
 
-**返回参数：**
+**返回参数**
 
 | 字段名        | 类型          | 说明          |
 | ------------- | ------------- | ------------- |
 | token         | Bearer $token | 新的验证token |
 | refresh_token | Bearer $token | 新的刷新token |
 
-##### 返回示例：
+**返回示例**
 
 | status | info                              | 说明                |
 | ------ | --------------------------------- | ------------------- |
@@ -159,31 +159,31 @@ POST /user/auth/refresh
 
 ### 搜索商品（规则排序）
 
-##### 请求路径：
+**请求路径**
 
 ```http
 GET /home/search
 ```
 
-**请求头：**
+**请求头**
 
 无
 
-**请求参数：**
+**请求参数**
 
-| 名称    | 位置  | 类型   | 必选 | 说明                                           |
-| ------- | ----- | ------ | ---- | ---------------------------------------------- |
-| keyword | query | string | 是   | 搜索关键词                                     |
-| sort_by | query | string | 否   | (price/sales/rating)(价格/销量/评分) 默认sales |
-| order   | query | string | 否   | `desc`/`asc`(降序/升序) 默认desc               |
+| 名称    | 位置  | 类型   | 必选 | 说明                                                   |
+| ------- | ----- | ------ | ---- | ------------------------------------------------------ |
+| keyword | query | string | 是   | 搜索关键词                                             |
+| sort_by | query | string | 否   | (`price`/`sales`/`rating`)(价格/销量/评分) 默认`sales` |
+| order   | query | string | 否   | `desc`/`asc`(降序/升序) 默认`desc`                     |
 
-**返回参数：**
+**返回参数**
 
 | 字段名  | 类型         | 说明               |
 | ------- | ------------ | ------------------ |
 | product | 复杂数据类型 | 搜索商品信息的集合 |
 
-##### 返回示例：
+**返回示例**
 
 | status | info                      | 说明               |
 | ------ | ------------------------- | ------------------ |
@@ -223,29 +223,29 @@ GET /home/search
 
 ### 商品分类
 
-##### 请求路径：
+**请求路径**
 
 ```http
 GET /home/category
 ```
 
-**请求头：**
+**请求头**
 
 无
 
-**请求参数：**
+**请求参数**
 
 | 名称     | 位置  | 类型   | 必选 | 说明       |
 | -------- | ----- | ------ | ---- | ---------- |
 | category | query | string | 是   | 分类关键词 |
 
-**返回参数：**
+**返回参数**
 
 | 字段名  | 类型         | 说明               |
 | ------- | ------------ | ------------------ |
 | product | 复杂数据类型 | 分类商品信息的集合 |
 
-##### 返回示例：
+**返回示例**
 
 | status | info                        | 说明               |
 | ------ | --------------------------- | ------------------ |
@@ -254,36 +254,139 @@ GET /home/category
 
 ```json
 {
-  "status": 200,
-  "info": "category products success",
-  "product": [
-    {
-      "product_id": 10,
-      "seller_id": 2,
-      "seller": "皓皓",
-      "name": "手机",
-      "price": "4000",
-      "sales": "5",
-      "rating": "5",
-      "category": "电子类",
-      "image": " "
-    },
-    {
-      "product_id": 12,
-      "seller_id": 2,
-      "seller": " ",
-      "name": "ipad",
-      "price": "1999.99",
-      "sales": "280",
-      "rating": "4.7",
-      "category": "电子类",
-      "image": " "
-    }
-  ]
+    "status": 200,
+    "info": "category products success",
+    "product": [
+        {
+            "product_id": 10,
+            "seller_id": 2,
+            "seller": "皓皓",
+            "name": "手机",
+            "price": "4000.00",
+            "sales": "5",
+            "rating": "5.0",
+            "category": "电子类",
+            "image": " "
+        },
+        {
+            "product_id": 12,
+            "seller_id": 2,
+            "seller": " ",
+            "name": "ipad",
+            "price": "1999.99",
+            "sales": "280",
+            "rating": "4.7",
+            "category": "电子类",
+            "image": " "
+        }
+    ]
+}
+```
+
+## 商品相关
+
+### 查看商品款式
+
+**请求路径**
+
+```http
+GET /product/style/:product_id
+```
+
+**请求头**
+
+无
+
+**请求参数**
+
+| 名称       | 位置 | 类型   | 必选 | 说明   |
+| ---------- | ---- | ------ | ---- | ------ |
+| product_id | path | string | 是   | 商品id |
+
+**返回参数**
+
+| 字段名 | 类型         | 说明               |
+| ------ | ------------ | ------------------ |
+| style  | 复杂数据类型 | 商品款式信息的集合 |
+
+**返回示例**
+
+| status | info                   | 说明               |
+| ------ | ---------------------- | ------------------ |
+| 200    | “search style success” | 查看款式成功       |
+| 500    | "internal error"       | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "search style success",
+    "style": [
+        {
+            "style_id": "1",
+            "product_id": "2",
+            "product": "手表",
+            "style": "红色"
+        },
+        {
+            "style_id": "2",
+            "product_id": "2",
+            "product": "手表",
+            "style": "蓝色"
+        }
+    ]
 }
 ```
 
 
+
+### 查看商品详情
+
+**请求路径**
+
+```http
+GET /product/detail/:product_id
+```
+
+**请求头**
+
+无
+
+**请求参数**
+
+| 名称       | 位置 | 类型   | 必选 | 说明   |
+| ---------- | ---- | ------ | ---- | ------ |
+| product_id | path | string | 是   | 商品id |
+
+**返回参数**
+
+| 字段名 | 类型         | 说明               |
+| ------ | ------------ | ------------------ |
+| detail | 复杂数据类型 | 商品详情信息的集合 |
+
+**返回示例**
+
+| status | info                          | 说明               |
+| ------ | ----------------------------- | ------------------ |
+| 200    | “view product detail success” | 查看商品详情成功   |
+| 500    | "internal error"              | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "view product detail success",
+    "detail": {
+        "detail_id": "1",
+        "name": "手机",
+        "seller": "皓皓",
+        "category": "电子类",
+        "price": "4000.00",
+        "stock": "500",
+        "description": "速度快，特别好用",
+        "image": " ",
+        "product_id": "10"
+    }
+}
+```
 
 ## 复杂数据类型
 
@@ -300,3 +403,25 @@ GET /home/category
 | rating     | string | 商品评分      |
 | category   | string | 商品图片`url` |
 
+##### 商品款式信息的集合
+
+| 名称       | 类型   | 说明   |
+| ---------- | ------ | ------ |
+| style_id   | string | 款式id |
+| product_id | string | 商品id |
+| product    | string | 商品名 |
+| style      | string | 款式   |
+
+##### 商品详情信息的集合
+
+| 名称        | 类型   | 说明          |
+| ----------- | ------ | ------------- |
+| detail_id   | string | 商品详情id    |
+| name        | string | 商品名        |
+| seller      | string | 卖家          |
+| category    | string | 商品类别      |
+| price       | string | 商品价格      |
+| stock       | string | 商品库存      |
+| description | string | 商品描述      |
+| image       | string | 商品图片`url` |
+| product_id  | string | 商品id        |

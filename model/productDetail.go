@@ -62,7 +62,7 @@ type Detail struct {
 type RespDetail struct {
 	Status int    `json:"status"`
 	Info   string `json:"info"`
-	Data   Detail `json:"data"`
+	Data   Detail `json:"detail"`
 }
 
 type Review struct {
