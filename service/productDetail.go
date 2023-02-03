@@ -69,3 +69,8 @@ func SearchReviewByProductId(productId string) (reviews []model.Review, err erro
 	reviews, err = dao.SearchReviewByProductId(productId)
 	return
 }
+
+func SearchNameByProductId(productId string) (name string, err error) {
+	name, err = dao.SearchNameByProductId(productId)
+	return
+}

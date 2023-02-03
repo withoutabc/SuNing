@@ -1,5 +1,7 @@
 package model
 
+import "time"
+
 type Style struct {
 	StyleId   string `json:"style_id"`
 	ProductId string `json:"product_id"`
@@ -44,7 +46,7 @@ type Collection struct {
 type RespCollection struct {
 	Status int          `json:"status"`
 	Info   string       `json:"info"`
-	Data   []Collection `json:"data"`
+	Data   []Collection `json:"collection"`
 }
 
 type Detail struct {
@@ -66,13 +68,13 @@ type RespDetail struct {
 }
 
 type Review struct {
-	ReviewId   string `json:"review_id"`
-	UserId     string `json:"user_id"`
-	Name       string `json:"name"`
-	Content    string `json:"content"`
-	CreateTime string `json:"create_time"`
-	Rating     string `json:"rating"`
-	ProductId  string `json:"product_id"`
+	ReviewId   string    `json:"review_id"`
+	UserId     string    `json:"user_id"`
+	Name       string    `json:"name"`
+	Content    string    `json:"content"`
+	CreateTime time.Time `json:"create_time"`
+	Rating     string    `json:"rating"`
+	ProductId  string    `json:"product_id"`
 }
 
 type RespReview struct {

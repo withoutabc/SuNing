@@ -2,6 +2,7 @@ package dao
 
 import (
 	"database/sql"
+	"fmt"
 	"suning/model"
 	"time"
 )
@@ -105,7 +106,8 @@ func SearchIfCollectionExist(userId, name string) (exist bool, err error) {
 }
 
 func DeleteCollection(userId, name string) (err error) {
-	_, err = DB.Exec("delete * from collection where user_id=? and name=?", userId, name)
+	_, err = DB.Exec("delete  from collection where user_id=? and name =?", userId, name)
+	fmt.Println()
 	return
 }
 
@@ -117,7 +119,7 @@ func SearchDetailByProductId(productId string) (detail model.Detail, err error) 
 }
 
 func InsertReview(review model.Review) (err error) {
-	_, err = DB.Exec("insert into review (user_id,name,content,create_time,rating) values (?,?,?,?,?)", review.UserId, review.Name, review.Content, time.Now(), review.Rating)
+	_, err = DB.Exec("insert into review (user_id,name,content,create_time,rating,product_id) values (?,?,?,?,?,?)", review.UserId, review.Name, review.Content, time.Now(), review.Rating, review.ProductId)
 	return
 }
 
@@ -135,4 +137,13 @@ func SearchReviewByProductId(productId string) (reviews []model.Review, err erro
 		reviews = append(reviews, review)
 	}
 	return
+}
+
+func SearchNameByProductId(productId string) (name string, err error) {
+	row := DB.QueryRow("select name from product where product_id=?", productId)
+	if err = row.Err(); err != nil {
+		return "", err
+	}
+	err = row.Scan(&name)
+	return name, err
 }

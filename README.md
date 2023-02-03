@@ -283,6 +283,28 @@ GET /home/category
 }
 ```
 
+## 账户相关
+
+### 充值余额
+
+### 查看余额
+
+## 个人相关
+
+### 修改个人信息
+
+### 查看个人信息
+
+## 地址相关
+
+### 添加地址
+
+### 查看地址
+
+### 修改地址
+
+### 删除地址
+
 ## 商品相关
 
 ### 查看商品款式
@@ -337,8 +359,6 @@ GET /product/style/:product_id
 }
 ```
 
-
-
 ### 查看商品详情
 
 **请求路径**
@@ -388,6 +408,355 @@ GET /product/detail/:product_id
 }
 ```
 
+## 购物车相关
+
+### 加入购物车
+
+### 查看购物车
+
+### 删除商品
+
+## 评价相关
+
+### 发布评价
+
+**请求路径**
+
+```http
+POST /auth/review/add/:user_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称       | 位置 | 类型   | 必选 | 说明     |
+| ---------- | ---- | ------ | ---- | -------- |
+| user_id    | path | string | 是   | 用户id   |
+| product_id | body | string | 是   | 商品id   |
+| content    | body | string | 是   | 评价内容 |
+| rating     | body | string | 是   | 评分     |
+
+**返回参数**
+
+无
+
+**返回示例**
+
+| status | info                  | 说明               |
+| ------ | --------------------- | ------------------ |
+| 200    | “give review success” | 发布评价成功       |
+| 500    | "internal error"      | 数据库增删查改错误 |
+
+### 查看评价
+
+**请求路径**
+
+```http
+GET /review/view/:product_id
+```
+
+**请求头**
+
+无
+
+**请求参数**
+
+| 名称       | 位置 | 类型   | 必选 | 说明   |
+| ---------- | ---- | ------ | ---- | ------ |
+| product_id | path | string | 是   | 商品id |
+
+**返回参数**
+
+| 字段名     | 类型         | 说明               |
+| ---------- | ------------ | ------------------ |
+| collection | 复杂数据类型 | 商品收藏信息的集合 |
+
+**返回示例**
+
+| status | info                  | 说明               |
+| ------ | --------------------- | ------------------ |
+| 200    | “view review success” | 查看评价成功       |
+| 500    | "internal error"      | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "view review success",
+    "review": [
+        {
+            "review_id": "1",
+            "user_id": "20",
+            "name": "手机",
+            "content": "不喜欢",
+            "create_time": "2023-02-02T20:57:22+08:00",
+            "rating": "3.0",
+            "product_id": "10"
+        },
+        {
+            "review_id": "2",
+            "user_id": "20",
+            "name": "手机",
+            "content": "我特别喜欢",
+            "create_time": "2023-02-02T21:32:53+08:00",
+            "rating": "5.0",
+            "product_id": "10"
+        }
+    ]
+}
+```
+
+## 收藏相关
+
+### 添加收藏
+
+**请求路径**
+
+```http
+POST /auth/collection/add/:user_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称    | 位置  | 类型   | 必选 | 说明   |
+| ------- | ----- | ------ | ---- | ------ |
+| user_id | path  | string | 是   | 用户id |
+| name    | query | string | 是   | 商品名 |
+
+**返回参数**
+
+无
+
+**返回示例**
+
+| status | info                     | 说明               |
+| ------ | ------------------------ | ------------------ |
+| 200    | “add collection success” | 添加收藏成功       |
+| 400    | "repeated name"          | 收藏的商品名重复   |
+| 500    | "internal error"         | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "add collection success"
+}
+```
+
+### 查看收藏
+
+**请求路径**
+
+```http
+GET /auth/collection/view/:user_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称    | 位置 | 类型   | 必选 | 说明   |
+| ------- | ---- | ------ | ---- | ------ |
+| user_id | path | string | 是   | 用户id |
+
+**返回参数**
+
+| 字段名     | 类型         | 说明               |
+| ---------- | ------------ | ------------------ |
+| collection | 复杂数据类型 | 商品收藏信息的集合 |
+
+**返回示例**
+
+| status | info                      | 说明               |
+| ------ | ------------------------- | ------------------ |
+| 200    | “view collection success” | 查看收藏成功       |
+| 500    | "internal error"          | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "view collection success",
+    "data": [
+        {
+            "collection_id": "1",
+            "user_id": "10",
+            "name": "手机"
+        },
+        {
+            "collection_id": "3",
+            "user_id": "10",
+            "name": "手表"
+        }
+    ]
+}
+```
+
+### 删除收藏
+
+**请求路径**
+
+```http
+DELETE /auth/collection/delete/:user_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称    | 位置  | 类型   | 必选 | 说明   |
+| ------- | ----- | ------ | ---- | ------ |
+| user_id | path  | string | 是   | 用户id |
+| name    | query | string | 是   | 商品名 |
+
+**返回参数**
+
+无
+
+**返回示例**
+
+| status | info                        | 说明               |
+| ------ | --------------------------- | ------------------ |
+| 200    | “delete collection success” | 删除收藏成功       |
+| 400    | "not exist name"            | 商品名不在收藏中   |
+| 500    | "internal error"            | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "delete collection success"
+}
+```
+
+## 店铺相关
+
+### 注册
+
+### 登录
+
+### 刷新token
+
+### 上架商品
+
+### 查看上架商品
+
+### 修改商品信息
+
+### 删除商品
+
+## 店铺详情相关
+
+### 商品分类
+
+### 商品排序
+
+## 店铺公告相关
+
+### 更新公告
+
+**请求路径**
+
+```http
+PUT /auth/announcement/update/:seller_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称      | 位置 | 类型   | 必选 | 说明     |
+| --------- | ---- | ------ | ---- | -------- |
+| seller_id | path | string | 是   | 卖家id   |
+| title     | body | string | 否   | 公告标题 |
+| content   | body | string | 否   | 公告内容 |
+
+**返回参数**
+
+无
+
+**返回示例**
+
+| status | info                          | 说明               |
+| ------ | ----------------------------- | ------------------ |
+| 200    | “update announcement success” | 更新公告成功       |
+| 500    | "internal error"              | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "update announcement success"
+}
+```
+
+### 查看公告
+
+**请求路径**
+
+```http
+GET /announcement/view/:seller_id
+```
+
+**请求头**
+
+无
+
+**请求参数**
+
+| 名称      | 位置 | 类型   | 必选 | 说明   |
+| --------- | ---- | ------ | ---- | ------ |
+| seller_id | path | string | 是   | 卖家id |
+
+**返回参数**
+
+| 名称            | 类型   | 必选 | 说明     |
+| --------------- | ------ | ---- | -------- |
+| announcement_id | string | 是   | 公告id   |
+| seller_id       | string | 是   | 卖家id   |
+| title           | string | 是   | 公告标题 |
+| content         | string | 是   | 公告内容 |
+
+**返回示例**
+
+| status | info                        | 说明               |
+| ------ | --------------------------- | ------------------ |
+| 200    | “view announcement success” | 查看公告成功       |
+| 500    | "internal error"            | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "view announcement success",
+    "data": {
+        "announcement_id": "1",
+        "seller_id": "3",
+        "title": "2.3最新公告",
+        "content": "我特别喜欢"
+    }
+}
+```
+
+
+
 ## 复杂数据类型
 
 ##### 搜索/分类商品信息的集合
@@ -401,7 +770,8 @@ GET /product/detail/:product_id
 | price      | string | 商品价格      |
 | sales      | string | 商品销量      |
 | rating     | string | 商品评分      |
-| category   | string | 商品图片`url` |
+| category   | string | 商品种类      |
+| image      | string | 商品图片`url` |
 
 ##### 商品款式信息的集合
 
@@ -425,3 +795,23 @@ GET /product/detail/:product_id
 | description | string | 商品描述      |
 | image       | string | 商品图片`url` |
 | product_id  | string | 商品id        |
+
+##### 商品评价信息的集合
+
+| 名称        | 类型   | 说明     |
+| ----------- | ------ | -------- |
+| review_id   | string | 评价id   |
+| user_id     | string | 用户id   |
+| name        | string | 商品名   |
+| content     | string | 评价内容 |
+| create_time | string | 评价时间 |
+| rating      | string | 评分     |
+| product_id  | string | 商品id   |
+
+##### 商品收藏信息的集合
+
+| 名称          | 类型   | 说明   |
+| ------------- | ------ | ------ |
+| collection_id | string | 收藏id |
+| user_id       | string | 用户id |
+| name          | string | 商品名 |

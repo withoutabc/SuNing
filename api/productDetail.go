@@ -270,13 +270,24 @@ func GiveReview(c *gin.Context) {
 	}
 	//获取评论信息
 	review := model.Review{
-		UserId:  userId,
-		Name:    c.PostForm("name"),
-		Content: c.PostForm("content"),
-		Rating:  c.PostForm("rating"),
+		UserId:    userId,
+		ProductId: c.PostForm("product_id"),
+		Content:   c.PostForm("content"),
+		Rating:    c.PostForm("rating"),
 	}
+	if review.ProductId == "" || review.Content == "" || review.Rating == "" {
+		util.RespParamErr(c)
+		return
+	}
+	name, err := service.SearchNameByProductId(review.ProductId)
+	if err != nil {
+		fmt.Printf("search name err:%v", err)
+		util.RespInternalErr(c)
+		return
+	}
+	review.Name = name
 	//插入数据
-	err := service.InsertReview(review)
+	err = service.InsertReview(review)
 	if err != nil {
 		fmt.Printf("insert view err:%v", err)
 		util.RespInternalErr(c)
