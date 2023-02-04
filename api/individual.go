@@ -88,7 +88,7 @@ func ViewInformation(c *gin.Context) {
 	}
 	//查询数据库
 	i, err := service.SearchInformationByUserId(userId)
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil {
 		log.Printf("search information error:%v", err)
 		util.RespInternalErr(c)
 		return
@@ -108,70 +108,34 @@ func ChangeInformation(c *gin.Context) {
 		util.RespParamErr(c)
 		return
 	}
-	UserId, _ := strconv.Atoi(userId)
+	UserId, err := strconv.Atoi(userId)
 	//传入要修改的信息
 	i := model.Information{
-		Nickname: c.PostForm("nickname"),    //最多15个字符
-		Gender:   c.PostForm("gender"),      //0保密 1男 2女
-		PhoneNum: c.PostForm("phoneNumber"), //11位
-		Email:    c.PostForm("email"),       //
-		Year:     c.PostForm("year"),        //4位
-		Month:    c.PostForm("month"),       //1-12
-		Day:      c.PostForm("day"),         //1-31
+		Nickname: c.PostForm("nickname"),
+		Gender:   c.PostForm("gender"),
+		PhoneNum: c.PostForm("phone_num"),
+		Email:    c.PostForm("email"),
+		Year:     c.PostForm("year"),
+		Month:    c.PostForm("month"),
+		Day:      c.PostForm("day"),
 		Avatar:   c.PostForm("avatar"),
 		UserId:   UserId,
 	}
-	//分析是否符合格式
-	//if len(i.Nickname) > 15 {
-	//	util.NormErr(c, 400, "nickname over 15")
-	//	return
-	//}
-	//if i.Gender != "" {
-	//	if i.Gender != "0" && i.Gender != "1" && i.Gender != "2" {
-	//		util.NormErr(c, 400, "invalid gender")
-	//		return
-	//	}
-	//}
-	//
-	//if i.PhoneNum != "" {
-	//	if len(i.PhoneNum) != 11 {
-	//		util.NormErr(c, 400, "invalid phone number")
-	//		return
-	//	}
-	//}
-	//if i.Email != "" {
-	//	// 定义一个正则表达式，用于匹配邮箱地址
-	//	pattern := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
-	//	// 使用MatchString函数判断字符串是否符合正则表达式
-	//	var match bool
-	//	match, err = regexp.MatchString(pattern, i.Email)
-	//	if err != nil {
-	//		util.NormErr(c, 400, "invalid email")
-	//		return
-	//	}
-	//	if match != true {
-	//		util.NormErr(c, 400, "invalid email")
-	//		return
-	//	}
-	//}
+	if err != nil {
+		util.RespParamErr(c)
+		return
+	}
 	//插入到数据库
 	if i.Nickname == "" && i.Gender == "" && i.PhoneNum == "" && i.Email == "" && i.Year == "" && i.Day == "" {
 		util.NormErr(c, 400, "fail to update")
 		return
 	}
-	err := service.ChangeInformation(i)
+	err = service.ChangeInformation(i)
 	if err != nil {
 		log.Printf("change information err:%v", err)
 		util.RespInternalErr(c)
 		return
 	}
-	////查询数据库
-	//i, err = service.SearchInformationByUsername(username)
-	//if err != nil && err != sql.ErrNoRows {
-	//	log.Printf("search information error:%v", err)
-	//	util.RespInternalErr(c)
-	//	return
-	//}
 	util.RespOK(c, "change information success")
 }
 
@@ -192,6 +156,10 @@ func AddAddress(c *gin.Context) {
 		StateOrCommunity: c.PostForm("street_or_community"),
 	}
 	//写入数据库
+	if address.RecipientName == "" || address.RecipientPhone == "" || address.Province == "" || address.City == "" || address.StateOrCommunity == "" {
+		util.RespParamErr(c)
+		return
+	}
 	err := service.AddAddress(address)
 	if err != nil {
 		log.Printf("add address err:%v", err)
@@ -224,14 +192,15 @@ func ViewAddress(c *gin.Context) {
 
 // UpdateAddress 实现修改地址接口
 func UpdateAddress(c *gin.Context) {
-	userId := c.Param("user_id")
-	if userId == "" {
+	addressId := c.Param("address_id")
+	if addressId == "" {
 		util.RespParamErr(c)
 		return
 	}
+	//
 	//获取地址
 	address := model.Address{
-		UserId:           userId,
+		AddressId:        addressId,
 		RecipientName:    c.PostForm("name"),
 		RecipientPhone:   c.PostForm("phone"),
 		Province:         c.PostForm("province"),
@@ -250,14 +219,13 @@ func UpdateAddress(c *gin.Context) {
 
 // DeleteAddress 实现删除地址接口
 func DeleteAddress(c *gin.Context) {
-	userId := c.Param("user_id")
-	if userId == "" {
+	addressId := c.Param("address_id")
+	if addressId == "" {
 		util.RespParamErr(c)
 		return
 	}
-	addressId := c.Query("address_id")
 	//删除地址
-	err := service.DeleteAddress(userId, addressId)
+	err := service.DeleteAddress(addressId)
 	if err != nil {
 		log.Printf("delete address err:%v", err)
 		util.RespInternalErr(c)

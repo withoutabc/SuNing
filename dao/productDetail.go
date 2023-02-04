@@ -72,7 +72,7 @@ func SearchIfNameExist(userId, name string) (exist bool, err error) {
 }
 
 func DeleteCart(userId, name string) (err error) {
-	_, err = DB.Exec("delete * from cart where user_id=? and name=?", userId, name)
+	_, err = DB.Exec("delete from cart where user_id=? and name=?", userId, name)
 	return
 }
 

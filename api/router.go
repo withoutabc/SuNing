@@ -50,7 +50,7 @@ func InitRouter() {
 		r.PUT("/auth/announcement/update/:seller_id", middleware.JWTAuthMiddleware(), middleware.SellerAuth(), UpdateAnnouncement)
 	}
 	//个人页面
-	i := r.Group("/individual/auth")
+	i := r.Group("/auth/individual")
 	{
 		i.Use(middleware.JWTAuthMiddleware(), middleware.UserAuth())
 		i.GET("/balance/:user_id", ViewBalance)
@@ -59,8 +59,8 @@ func InitRouter() {
 		i.PUT("/modify/:user_id", ChangeInformation)
 		i.POST("/address/add/:user_id", AddAddress)
 		i.GET("/address/view/:user_id", ViewAddress)
-		i.PUT("/address/update/:user_id", UpdateAddress)
-		i.DELETE("/address/delete/:user_id", DeleteAddress)
+		i.PUT("/address/update/:address_id", UpdateAddress)
+		i.DELETE("/address/delete/:address_id", DeleteAddress)
 	}
 	//订单
 	b := r.Group("/order/auth")
@@ -81,7 +81,7 @@ func InitRouter() {
 		a := s.Group("/auth")
 		{
 			a.Use(middleware.JWTAuthMiddleware(), middleware.SellerAuth())
-			a.GET("/refresh", Refresh)
+			a.POST("/refresh", Refresh)
 			a.GET("/view/:seller_id", ViewProduct)
 			a.POST("/add/:seller_id", AddProduct)
 			a.PUT("/update/:seller_id", UpdateProduct)

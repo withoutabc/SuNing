@@ -38,8 +38,8 @@ func InsertInformation(username string, userId int) (err error) {
 
 func SearchInformationByUserId(userId string) (i model.Information, err error) {
 	row := DB.QueryRow("select * from information where user_id=?", userId)
-	if err = row.Err(); row.Err() != nil {
-		return
+	if err = row.Err(); err != nil {
+		return model.Information{}, err
 	}
 	err = row.Scan(&i.Username, &i.Nickname, &i.Gender, &i.PhoneNum, &i.Email, &i.Year, &i.Month, &i.Day, &i.Avatar, &i.UserId)
 	return
@@ -113,7 +113,7 @@ func UpdateInformation(i model.Information) (err error) {
 }
 
 func AddAddress(a model.Address) (err error) {
-	_, err = DB.Exec("insert into address (user_id,recipient_name,recipient_phone,province,city,street_or_community) values (?,?,?,?,?,?)", a.UserId, a.RecipientName, a.RecipientName, a.Province, a.City, a.StateOrCommunity)
+	_, err = DB.Exec("insert into address (user_id,recipient_name,recipient_phone,province,city,street_or_community) values (?,?,?,?,?,?)", a.UserId, a.RecipientName, a.RecipientPhone, a.Province, a.City, a.StateOrCommunity)
 	return
 }
 
@@ -140,11 +140,11 @@ func SearchAddressById(addressId string) (address model.Address, err error) {
 }
 
 func UpdateAddress(a model.Address) (err error) {
-	_, err = DB.Exec("update address set recipient_name=?,recipient_phone=?,province=?,city=?,street_or_community=? where user_id=?", a.RecipientName, a.RecipientPhone, a.Province, a.City, a.StateOrCommunity, a.UserId)
+	_, err = DB.Exec("update address set recipient_name=?,recipient_phone=?,province=?,city=?,street_or_community=? where address_id=?", a.RecipientName, a.RecipientPhone, a.Province, a.City, a.StateOrCommunity, a.AddressId)
 	return
 }
 
-func DeleteAddress(addressId, userId string) (err error) {
-	_, err = DB.Exec("delete * from address where user_id=? and address_id=?", userId, addressId)
+func DeleteAddress(addressId string) (err error) {
+	_, err = DB.Exec("delete from address where address_id=?", addressId)
 	return
 }

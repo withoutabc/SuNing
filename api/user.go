@@ -31,12 +31,12 @@ func Register(c *gin.Context) {
 	}
 	//用户是否存在
 	if u.Username != "" {
-		util.NormErr(c, 300, "user has existed")
+		util.NormErr(c, 400, "user has existed")
 		return
 	}
 	//两次密码是否一致
 	if confirmPassword != password {
-		util.NormErr(c, 300, "different password")
+		util.NormErr(c, 400, "different password")
 		return
 	}
 	//用户信息写入数据库
@@ -53,7 +53,7 @@ func Register(c *gin.Context) {
 	u, err = service.SearchUserByUsername(username)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			util.NormErr(c, 300, "user has exist")
+			util.NormErr(c, 400, "user has exist")
 		} else {
 			log.Printf("search user error:%v", err)
 			util.RespInternalErr(c)
@@ -122,7 +122,7 @@ func Login(c *gin.Context) {
 		Status: 200,
 		Info:   "login success",
 		Data: model.Login{
-			Uid:          u.UserId,
+			UserId:       u.UserId,
 			Token:        aToken,
 			RefreshToken: rToken,
 		},

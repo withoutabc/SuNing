@@ -1,9 +1,9 @@
 package model
 
 type Account struct {
-	UserId   int    `json:"user_id"`
-	Username string `json:"username"`
-	Balance  int    `json:"balance"`
+	UserId   int     `json:"user_id"`
+	Username string  `json:"username"`
+	Balance  float64 `json:"balance"`
 }
 
 type RespBalance struct {

@@ -32,7 +32,19 @@ type RespLogin struct {
 }
 
 type Login struct {
-	Uid          int    `json:"uid"`
+	UserId       int    `json:"user_id"`
 	Token        string `json:"token"`
 	RefreshToken string `json:"refresh_token"`
+}
+
+type SellerLogin struct {
+	SellerId     int    `json:"seller_id"`
+	Token        string `json:"token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+type RespSellerLogin struct {
+	Status int         `json:"status"`
+	Info   string      `json:"info"`
+	Data   SellerLogin `json:"data"`
 }

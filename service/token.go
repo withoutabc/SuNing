@@ -21,8 +21,8 @@ func GenToken(uid, role string) (aToken, rToken string, err error) {
 		UserId: uid,
 		Role:   role,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour).Unix(), // 过期时间
-			Issuer:    "YJX",                            // 签发人
+			ExpiresAt: time.Now().Add(time.Hour * 24).Unix(), // 过期时间
+			Issuer:    "YJX",                                 // 签发人
 		},
 	}
 	// 加密并获得完整的编码后的字符串token

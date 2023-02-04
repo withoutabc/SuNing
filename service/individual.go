@@ -56,7 +56,7 @@ func UpdateAddress(a model.Address) (err error) {
 	return
 }
 
-func DeleteAddress(addressId, userId string) (err error) {
-	err = dao.DeleteAddress(userId, addressId)
+func DeleteAddress(addressId string) (err error) {
+	err = dao.DeleteAddress(addressId)
 	return
 }

@@ -40,7 +40,7 @@ func StoreSort(sellerId, sortBy, order string) (products []model.Product, err er
 
 func StoreCategory(sellerId, category string) (products []model.Product, err error) {
 	var rows *sql.Rows
-	rows, err = DB.Query("select * from product where category=? and sellerId=?", category, sellerId)
+	rows, err = DB.Query("select * from product where category=? and seller_id=?", category, sellerId)
 	if err != nil {
 		return nil, err
 	}

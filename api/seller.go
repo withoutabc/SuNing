@@ -31,12 +31,12 @@ func BackRegister(c *gin.Context) {
 	}
 	//用户是否存在
 	if u.Seller != "" {
-		util.NormErr(c, 300, "seller has existed")
+		util.NormErr(c, 400, "seller has existed")
 		return
 	}
 	//两次密码是否一致
 	if confirmPassword != password {
-		util.NormErr(c, 300, "different password")
+		util.NormErr(c, 400, "different password")
 		return
 	}
 	//用户信息写入数据库
@@ -79,7 +79,7 @@ func BackLogin(c *gin.Context) {
 	s, err := service.SearchNameBySeller(seller)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			util.NormErr(c, 300, "user not exist")
+			util.NormErr(c, 400, "seller not exist")
 		} else {
 			log.Printf("search seller error:%v", err)
 			util.RespInternalErr(c)
@@ -89,7 +89,7 @@ func BackLogin(c *gin.Context) {
 	}
 	//密码错误
 	if s.Password != password {
-		util.NormErr(c, 300, "wrong password")
+		util.NormErr(c, 400, "wrong password")
 		return
 	}
 	//密码正确
@@ -100,52 +100,16 @@ func BackLogin(c *gin.Context) {
 			"info":   "generate token error",
 		})
 	}
-	c.JSON(http.StatusOK, model.RespLogin{
+	c.JSON(http.StatusOK, model.RespSellerLogin{
 		Status: 200,
 		Info:   "login success",
-		Data: model.Login{
-			Uid:          s.SellerId,
+		Data: model.SellerLogin{
+			SellerId:     s.SellerId,
 			Token:        aToken,
 			RefreshToken: rToken,
 		},
 	})
 }
-
-//// BackRefresh 实现了后台刷新token接口
-//func BackRefresh(c *gin.Context) {
-//	//refresh_token
-//	rToken := c.PostForm("refresh_token")
-//	if rToken == "" {
-//		util.RespParamErr(c)
-//		return
-//	}
-//	_, err := service.ParseToken(rToken)
-//	if err != nil {
-//		c.JSON(http.StatusBadRequest, gin.H{
-//			"status": 2005,
-//			"info":   "无效的token",
-//		})
-//		return
-//	}
-//	//生成新的token
-//	newAToken, newRToken, err := service.RefreshToken(rToken)
-//	if err != nil {
-//		fmt.Printf("refresh err:%v", err)
-//		c.JSON(http.StatusBadRequest, gin.H{
-//			"status": 400,
-//			"info":   err.Error(),
-//		})
-//		return
-//	}
-//	c.JSON(http.StatusOK, model.RespToken{
-//		Status: 200,
-//		Info:   "refresh token success",
-//		Data: model.Token{
-//			Token:        newAToken,
-//			RefreshToken: newRToken,
-//		},
-//	})
-//}
 
 // ViewProduct 实现了后台查看商品接口
 func ViewProduct(c *gin.Context) {

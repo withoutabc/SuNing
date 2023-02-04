@@ -99,15 +99,16 @@ POST /user/login
 
 ```json
 {
-  "status": 200,
-  "info": "login success",
-  "data": {
-    "uid": 9,
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI5IiwiZXhwIjoxNjczODc4OTczLCJpc3MiOiJZSlgifQ.TVAW3nNgqc8ROnBQACOkLxnu1qqJ9DcUGX684-5pHlY",
-    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDU0MTEzNzMsImlzcyI6IllKWCJ9.4GhEDBx6agW2wK_o1-gFuCIifRyWqMwLSKR2VXWueJ8"
-  }
+    "status": 200,
+    "info": "login success",
+    "data": {
+        "user_id": 20,
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMjAiLCJyb2xlIjoidXNlciIsImV4cCI6MTY3NTU5MzI3NywiaXNzIjoiWUpYIn0.c7BTz66NqGsfB4xr9EcQamUlrMgGAET3wHrbM_LxZUk",
+        "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzU1OTMyNzcsImlzcyI6IllKWCJ9.1VbdA9knu256dhcADNZ15HPqu-uxJjuyiQ7owgsf4og"
+    }
 }
 ```
+
 ### 刷新token
 
 **请求路径**
@@ -287,23 +288,385 @@ GET /home/category
 
 ### 充值余额
 
+**请求路径**
+
+```http
+POST /auth/individual/recharge/:user_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称    | 位置  | 类型      | 必选 | 说明     |
+| ------- | ----- | --------- | ---- | -------- |
+| user_id | path  | string    | 是   | 用户id   |
+| account | query | float/int | 是   | 充值金额 |
+
+**返回参数**
+
+无
+
+**返回示例**
+
+| status | info               | 说明                   |
+| ------ | ------------------ | ---------------------- |
+| 200    | “recharge success” | 充值余额成功           |
+| 400    | "invalid charge"   | 充值金额错误（不合法） |
+| 500    | "internal error"   | 数据库增删查改错误     |
+
+```json
+{
+    "status": 200,
+    "info": "recharge success"
+}
+```
+
 ### 查看余额
+
+**请求路径**
+
+```http
+GET /auth/individual/balance/:user_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称    | 位置 | 类型   | 必选 | 说明   |
+| ------- | ---- | ------ | ---- | ------ |
+| user_id | path | string | 是   | 用户id |
+
+**返回参数**
+
+| 字段名   | 类型   | 说明   |
+| -------- | ------ | ------ |
+| user_id  | int    | 用户id |
+| username | string | 用户名 |
+| balance  | float  | 余额   |
+
+**返回示例**
+
+| status | info                   | 说明               |
+| ------ | ---------------------- | ------------------ |
+| 200    | “view balance success” | 查看余额成功       |
+| 500    | "internal error"       | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "view balance success",
+    "data": {
+        "user_id": 20,
+        "username": "小3",
+        "balance": 40
+    }
+}
+```
 
 ## 个人相关
 
 ### 修改个人信息
 
+**请求路径**
+
+```http
+PUT /auth/individual/modify/:user_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 字段名    | 位置 | 类型   | 必选 | 说明                |
+| --------- | ---- | ------ | ---- | ------------------- |
+| user_id   | path | string | 是   | 用户id              |
+| nickname  | body | string | 否   | 昵称                |
+| gender    | body | string | 否   | 性别（0保密1男2女） |
+| phone_num | body | string | 否   | 电话号码            |
+| year      | body | string | 否   | 生日年份            |
+| month     | body | string | 否   | 生日月份            |
+| day       | body | string | 否   | 生日哪一天          |
+| avatar    | body | string | 否   | 头像`url`           |
+
+**返回参数**
+
+无
+
+**返回示例**
+
+| status | info                         | 说明                 |
+| ------ | ---------------------------- | -------------------- |
+| 200    | “change information success” | 修改个人信息成功     |
+| 400    | "fail to update"             | 所有非必选项均为填写 |
+| 500    | "internal error"             | 数据库增删查改错误   |
+
+```json
+{
+    "status": 200,
+    "info": "change information success"
+}
+```
+
 ### 查看个人信息
+
+**请求路径**
+
+```http
+GET /auth/individual/information/:user_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称    | 位置 | 类型   | 必选 | 说明   |
+| ------- | ---- | ------ | ---- | ------ |
+| user_id | path | string | 是   | 用户id |
+
+**返回参数**
+
+| 字段名    | 类型   | 说明                |
+| --------- | ------ | ------------------- |
+| user_id   | int    | 用户id              |
+| username  | string | 用户名              |
+| nickname  | string | 昵称                |
+| gender    | string | 性别（0保密1男2女） |
+| phone_num | string | 电话号码            |
+| email     | string | 邮箱                |
+| year      | string | 生日年份            |
+| month     | string | 生日月份            |
+| day       | string | 生日哪一天          |
+| avatar    | string | 头像`url`           |
+
+**返回示例**
+
+| status | info                       | 说明               |
+| ------ | -------------------------- | ------------------ |
+| 200    | “view information success” | 查看个人信息成功   |
+| 500    | "internal error"           | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "view information success",
+    "data": {
+        "user_id": 18,
+        "username": "小1",
+        "nickname": "YIYI",
+        "gender": "0",
+        "phone_num": "15688888888",
+        "email": "@qq.com",
+        "year": "2023",
+        "month": "02",
+        "day": "04",
+        "avatar": ""
+    }
+}
+```
 
 ## 地址相关
 
 ### 添加地址
 
+**请求路径**
+
+```http
+POST /auth/individual/address/add/:user_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称                | 位置 | 类型   | 必选 | 说明       |
+| ------------------- | ---- | ------ | ---- | ---------- |
+| user_id             | path | string | 是   | 用户id     |
+| name                | body | string | 是   | 收货人姓名 |
+| phone               | body | string | 是   | 收货人电话 |
+| province            | body | string | 是   | 省份       |
+| city                | body | string | 是   | 城市       |
+| street_or_community | body | string | 是   | 街道或小区 |
+
+**返回参数**
+
+无
+
+**返回示例**
+
+| status | info                  | 说明               |
+| ------ | --------------------- | ------------------ |
+| 200    | “add address success” | 添加地址成功       |
+| 500    | "internal error"      | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "add address success"
+}
+```
+
 ### 查看地址
+
+**请求路径**
+
+```http
+GET /auth/individual/address/view/:user_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称    | 位置 | 类型   | 必选 | 说明   |
+| ------- | ---- | ------ | ---- | ------ |
+| user_id | path | string | 是   | 用户id |
+
+**返回参数**
+
+| 字段名  | 类型         | 说明       |
+| ------- | ------------ | ---------- |
+| address | 复杂数据类型 | 地址的集合 |
+
+**返回示例**
+
+| status | info                   | 说明               |
+| ------ | ---------------------- | ------------------ |
+| 200    | “view balance success” | 查看余额成功       |
+| 500    | "internal error"       | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "view address success",
+    "address": [
+        {
+            "address_id": "3",
+            "user_id": "20",
+            "recipient_name": "小3",
+            "recipient_phone": "17723888888",
+            "province": "江苏",
+            "city": "盐城",
+            "state_or_community": "**街道"
+        },
+        {
+            "address_id": "4",
+            "user_id": "20",
+            "recipient_name": "小3",
+            "recipient_phone": "17723888888",
+            "province": "江苏",
+            "city": "南京",
+            "state_or_community": "**街道"
+        }
+    ]
+}
+```
 
 ### 修改地址
 
+**请求路径**
+
+```http
+PUT /auth/individual/address/update/:address_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称                | 位置 | 类型   | 必选 | 说明       |
+| ------------------- | ---- | ------ | ---- | ---------- |
+| address_id          | path | string | 是   | 地址id     |
+| name                | body | string | 是   | 收货人     |
+| phone               | body | string | 是   | 收货电话   |
+| province            | body | string | 是   | 省份       |
+| city                | body | string | 是   | 城市       |
+| street_or_community | body | string | 是   | 街道或小区 |
+
+**返回参数**
+
+无
+
+**返回示例**
+
+| status | info                     | 说明               |
+| ------ | ------------------------ | ------------------ |
+| 200    | “update address success” | 修改地址成功       |
+| 500    | "internal error"         | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "update address success"
+}
+```
+
 ### 删除地址
+
+**请求路径**
+
+```http
+DELETE /auth/individual/address/delete/:address_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称       | 位置 | 类型   | 必选 | 说明   |
+| ---------- | ---- | ------ | ---- | ------ |
+| address_id | path | string | 是   | 地址id |
+
+**返回参数**
+
+无
+
+**返回示例**
+
+| status | info                     | 说明               |
+| ------ | ------------------------ | ------------------ |
+| 200    | “delete address success” | 删除地址成功       |
+| 500    | "internal error"         | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "delete address success"
+}
+```
 
 ## 商品相关
 
@@ -412,9 +775,145 @@ GET /product/detail/:product_id
 
 ### 加入购物车
 
+**请求路径**
+
+```http
+POST /auth/cart/add/:user_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称     | 位置  | 类型   | 必选 | 说明     |
+| -------- | ----- | ------ | ---- | -------- |
+| user_id  | path  | string | 是   | 用户id   |
+| name     | query | string | 是   | 商品名   |
+| quantity | query | string | 是   | 商品数量 |
+
+**返回参数**
+
+无
+
+**返回示例**
+
+| status | info                  | 说明               |
+| ------ | --------------------- | ------------------ |
+| 200    | “add to cart success” | 加入购物车成功     |
+| 400    | "repeated name"       | 商品名重复         |
+| 400    | "convert err"         | 数字格式错误       |
+| 500    | "internal error"      | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "add to cart success"
+}
+```
+
 ### 查看购物车
 
+**请求路径**
+
+```http
+GET /auth/cart/view/:user_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称    | 位置 | 类型   | 必选 | 说明   |
+| ------- | ---- | ------ | ---- | ------ |
+| user_id | path | string | 是   | 用户id |
+
+**返回参数**
+
+| 字段名 | 类型         | 说明         |
+| ------ | ------------ | ------------ |
+| cart   | 复杂数据类型 | 购物车的集合 |
+
+**返回示例**
+
+| status | info                | 说明               |
+| ------ | ------------------- | ------------------ |
+| 200    | “view cart success” | 查看购物车成功     |
+| 500    | "internal error"    | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "view cart success",
+    "cart": [
+        {
+            "cart_id": "2",
+            "user_id": "20",
+            "name": "手机",
+            "unit_price": "4000.00",
+            "quantity": "2",
+            "price": "8000.00",
+            "image": ""
+        },
+        {
+            "cart_id": "3",
+            "user_id": "20",
+            "name": "洗面奶",
+            "unit_price": "70.00",
+            "quantity": "5",
+            "price": "350.00",
+            "image": ""
+        }
+    ]
+}
+```
+
 ### 删除商品
+
+**请求路径**
+
+```http
+DELETE /auth/cart/delete/:user_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称    | 位置  | 类型   | 必选 | 说明   |
+| ------- | ----- | ------ | ---- | ------ |
+| user_id | path  | string | 是   | 用户id |
+| name    | query | string | 是   | 商品名 |
+
+**返回参数**
+
+无
+
+**返回示例**
+
+| status | info                  | 说明                |
+| ------ | --------------------- | ------------------- |
+| 200    | “delete cart success” | 删除购物车成功      |
+| 400    | "not exist name"      | 商品名不在g购物车中 |
+| 500    | "internal error"      | 数据库增删查改错误  |
+
+```json
+{
+    "status": 200,
+    "info": "delete cart success"
+}
+```
 
 ## 评价相关
 
@@ -451,6 +950,13 @@ POST /auth/review/add/:user_id
 | ------ | --------------------- | ------------------ |
 | 200    | “give review success” | 发布评价成功       |
 | 500    | "internal error"      | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "give review success"
+}
+```
 
 ### 查看评价
 
@@ -644,13 +1150,155 @@ DELETE /auth/collection/delete/:user_id
 }
 ```
 
+## 订单相关
+
+### 生成订单
+
+### 结算订单
+
+### 查看订单
+
+### 更新订单状态
+
+### 按订单状态分类
+
+### 删除订单
+
 ## 店铺相关
 
 ### 注册
 
+**请求路径**
+
+```http
+POST /seller/register
+```
+
+**请求头**
+
+无
+
+**请求参数**
+
+| 名称             | 位置 | 类型   | 必选 | 说明     |
+| ---------------- | ---- | ------ | ---- | -------- |
+| seller           | body | string | 是   | 用户名   |
+| password         | body | string | 是   | 密码     |
+| confirm_password | body | string | 是   | 确认密码 |
+
+**返回参数**
+
+无
+
+**返回示例**
+
+| status | info                 | 说明           |
+| ------ | -------------------- | -------------- |
+| 200    | “register success”   | 注册成功       |
+| 400    | "different password" | 密码不一致     |
+| 400    | "seller has existed" | 卖家名已存在   |
+| 500    | "internal error"     | 数据库增删查改 |
+
+```json
+{
+    "status": 200,
+    "info": "register success"
+}
+```
+
 ### 登录
 
+**请求路径**
+
+```http
+POST /seller/login
+```
+
+**请求头**
+
+无
+
+**请求参数**
+
+| 名称     | 位置 | 类型   | 必选 | 说明   |
+| -------- | ---- | ------ | ---- | ------ |
+| username | body | string | 是   | 用户名 |
+| password | body | string | 是   | 密码   |
+
+**返回参数**
+
+| 字段名        | 类型          | 说明      |
+| ------------- | ------------- | --------- |
+| uid           | string        | 用户id    |
+| token         | Bearer $token | 验证token |
+| refresh_token | Bearer $token | 刷新token |
+
+**返回示例**
+
+| status | info               | 说明               |
+| ------ | ------------------ | ------------------ |
+| 200    | “login success”    | 登录成功           |
+| 400    | "seller not exist" | 用户不存在         |
+| 400    | “wrong password"   | 密码错误           |
+| 500    | "internal error"   | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "login success",
+    "data": {
+        "seller_id": 4,
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNCIsInJvbGUiOiJzZWxsZXIiLCJleHAiOjE2NzU1OTMxMTQsImlzcyI6IllKWCJ9.r9Ll_xqZIM5oX3zgcj48dgy-XEIMZGIm1H0345W9_5o",
+        "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzU1OTMxMTQsImlzcyI6IllKWCJ9.7wRUQ5IwheEKp_qrmUdWdQBarZ7nXUgl2wkptGfINHs"
+    }
+}
+```
+
 ### 刷新token
+
+**请求路径**
+
+```http
+POST /seller/auth/refresh
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称          | 位置 | 类型   | 必选 | 说明      |
+| ------------- | ---- | ------ | ---- | --------- |
+| refresh_token | body | string | 是   | 刷新token |
+
+**返回参数**
+
+| 字段名        | 类型          | 说明          |
+| ------------- | ------------- | ------------- |
+| token         | Bearer $token | 新的验证token |
+| refresh_token | Bearer $token | 新的刷新token |
+
+**返回示例**
+
+| status | info                              | 说明                |
+| ------ | --------------------------------- | ------------------- |
+| 200    | “refresh token success”           | 刷新令牌成功        |
+| 2005   | "无效的Token"                     | refresh_token已过期 |
+| 400    | "invalid refresh token signature" | 签名认证错误        |
+
+```json
+{
+    "status": 200,
+    "info": "refresh token success",
+    "data": {
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiIiwicm9sZSI6IiIsImV4cCI6MTY3NTU5MDY3OCwiaXNzIjoiWUpYIn0.rgizSWRrU83W0I-AgOS-AEL7cgcRCoLMNDe72aW05xc",
+        "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzU1OTA2NzgsImlzcyI6IllKWCJ9.F-rsyfFQsJJhf3EneKzWgU1sWZ2fJid6E-VDEUdx4Dw"
+    }
+}
+```
 
 ### 上架商品
 
@@ -662,9 +1310,154 @@ DELETE /auth/collection/delete/:user_id
 
 ## 店铺详情相关
 
+### 商品排序
+
+**请求路径**
+
+```http
+GET /store/sort/:seller_id
+```
+
+**请求头**
+
+无
+
+**请求参数**
+
+| 名称      | 位置  | 类型   | 必选 | 说明                                                   |
+| --------- | ----- | ------ | ---- | ------------------------------------------------------ |
+| seller_id | path  | string | 是   | 卖家id                                                 |
+| sort_by   | query | string | 否   | (`price`/`sales`/`rating`)(价格/销量/评分) 默认`sales` |
+| order     | query | string | 否   | `desc`/`asc`(降序/升序) 默认`desc`                     |
+
+**返回参数**
+
+| 字段名  | 类型         | 说明               |
+| ------- | ------------ | ------------------ |
+| product | 复杂数据类型 | 搜索商品信息的集合 |
+
+**返回示例**
+
+| status | info                      | 说明               |
+| ------ | ------------------------- | ------------------ |
+| 200    | “search products success” | 搜索商品成功       |
+| 500    | "internal error"          | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "search products success",
+    "product": [
+        {
+            "product_id": 10,
+            "seller_id": 2,
+            "seller": "皓皓",
+            "name": "手机",
+            "price": "4000.00",
+            "sales": "5",
+            "rating": "5.0",
+            "category": "电子类",
+            "image": " "
+        },
+        {
+            "product_id": 11,
+            "seller_id": 2,
+            "seller": "皓皓",
+            "name": "洗面奶",
+            "price": "70.00",
+            "sales": "66",
+            "rating": "4.0",
+            "category": "日用品",
+            "image": ""
+        },
+        {
+            "product_id": 12,
+            "seller_id": 2,
+            "seller": "皓皓",
+            "name": "ipad",
+            "price": "1999.99",
+            "sales": "280",
+            "rating": "4.7",
+            "category": "电子类",
+            "image": " "
+        },
+        {
+            "product_id": 13,
+            "seller_id": 2,
+            "seller": "皓皓",
+            "name": "牙刷",
+            "price": "9.99",
+            "sales": "404",
+            "rating": "4.6",
+            "category": "日用品",
+            "image": " "
+        }
+    ]
+}
+```
+
 ### 商品分类
 
-### 商品排序
+**请求路径**
+
+```http
+GET /store/category/:seller_id
+```
+
+**请求头**
+
+无
+
+**请求参数**
+
+| 名称      | 位置  | 类型   | 必选 | 说明       |
+| --------- | ----- | ------ | ---- | ---------- |
+| seller_id | path  | string | 是   | 卖家id     |
+| category  | query | string | 是   | 分类关键词 |
+
+**返回参数**
+
+| 字段名  | 类型         | 说明               |
+| ------- | ------------ | ------------------ |
+| product | 复杂数据类型 | 分类商品信息的集合 |
+
+**返回示例**
+
+| status | info                        | 说明               |
+| ------ | --------------------------- | ------------------ |
+| 200    | “category products success” | 商品分类成功       |
+| 500    | "internal error"            | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "category products success",
+    "product": [
+        {
+            "product_id": 11,
+            "seller_id": 2,
+            "seller": "皓皓",
+            "name": "洗面奶",
+            "price": "70.00",
+            "sales": "66",
+            "rating": "4.0",
+            "category": "日用品",
+            "image": ""
+        },
+        {
+            "product_id": 13,
+            "seller_id": 2,
+            "seller": "皓皓",
+            "name": "牙刷",
+            "price": "9.99",
+            "sales": "404",
+            "rating": "4.6",
+            "category": "日用品",
+            "image": " "
+        }
+    ]
+}
+```
 
 ## 店铺公告相关
 
@@ -687,8 +1480,8 @@ PUT /auth/announcement/update/:seller_id
 | 名称      | 位置 | 类型   | 必选 | 说明     |
 | --------- | ---- | ------ | ---- | -------- |
 | seller_id | path | string | 是   | 卖家id   |
-| title     | body | string | 否   | 公告标题 |
-| content   | body | string | 否   | 公告内容 |
+| title     | body | string | 是   | 公告标题 |
+| content   | body | string | 是   | 公告内容 |
 
 **返回参数**
 
@@ -815,3 +1608,27 @@ GET /announcement/view/:seller_id
 | collection_id | string | 收藏id |
 | user_id       | string | 用户id |
 | name          | string | 商品名 |
+
+##### 地址的集合
+
+| 名称                | 类型   | 说明       |
+| ------------------- | ------ | ---------- |
+| address_id          | string | 评价id     |
+| user_id             | string | 用户id     |
+| recipient_name      | string | 收货人     |
+| recipient_phone     | string | 收获电话   |
+| province            | string | 省份       |
+| city                | string | 城市       |
+| street_or_community | string | 街道或小区 |
+
+##### 购物车的集合
+
+| 名称       | 类型   | 说明          |
+| ---------- | ------ | ------------- |
+| cart_id    | string | 购物车id      |
+| user_id    | string | 用户id        |
+| name       | string | 商品名        |
+| unit_price | string | 商品单价      |
+| quantity   | string | 数量          |
+| price      | string | 商品总价      |
+| image      | string | 商品图片`url` |
