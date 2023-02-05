@@ -9,7 +9,7 @@ type Order struct {
 	Status           string    `json:"status"`
 	PaymentMethod    string    `json:"payment_method"`
 	PaymentAmount    float64   `json:"payment_amount"`
-	PaymentTime      string    `json:"payment_time"`
+	PaymentTime      time.Time `json:"payment_time"`
 	RecipientName    string    `json:"recipient_name"`
 	RecipientAddress string    `json:"recipient_address"`
 	RecipientPhone   string    `json:"recipient_phone"`

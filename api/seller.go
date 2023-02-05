@@ -135,10 +135,10 @@ func AddProduct(c *gin.Context) {
 	SellerId := c.Param("seller_id")
 	sellerId, err := strconv.Atoi(SellerId)
 	if err != nil {
-		util.NormErr(c, 400, "invalid sellerId")
+		util.NormErr(c, 400, "invalid seller id")
 		return
 	}
-	//根据sid查找seller
+	//根据sellerId查找seller
 	s, err := service.SearchSellerBySellerId(SellerId)
 	if err != nil {
 		fmt.Printf("search seller:%v", err)
@@ -185,7 +185,7 @@ func UpdateProduct(c *gin.Context) {
 	SellerId := c.Param("seller_id")
 	sellerId, err := strconv.Atoi(SellerId)
 	if err != nil {
-		util.NormErr(c, 400, "invalid sellerId")
+		util.NormErr(c, 400, "invalid seller id")
 		return
 	}
 	//获取要修改的数据
@@ -221,7 +221,6 @@ func UpdateProduct(c *gin.Context) {
 		util.NormErr(c, 400, "fail to update")
 		return
 	}
-	//判断修改后信息是否有变化
 	//修改数据
 	err = service.UpdateProduct(p)
 	if err != nil {
@@ -238,6 +237,10 @@ func DeleteProduct(c *gin.Context) {
 	SellerId := c.Param("seller_id")
 	//获取要删除的商品名称
 	name := c.Query("name")
+	if name == "" {
+		util.RespParamErr(c)
+		return
+	}
 	//判断name是否存在
 	var count int
 	products, err := service.SearchNameBySellerId(SellerId)

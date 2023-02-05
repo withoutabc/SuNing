@@ -69,9 +69,9 @@ func InitRouter() {
 		b.POST("/add/:user_id", GenOrder)
 		b.POST("/settle/:user_id", SettleBill)
 		b.GET("/search/:user_id", SearchOrder)
-		b.PUT("/update/:user_id", UpdateOrderStatus)
+		b.PUT("/update/:order_id", UpdateOrderStatus)
 		b.GET("/view/:user_id", ViewOrder)
-		b.DELETE("/delete/:user_id", DeleteOrder)
+		b.DELETE("/delete/:order_id", DeleteOrder)
 	}
 	//后台管理
 	s := r.Group("/seller")

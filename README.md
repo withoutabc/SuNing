@@ -2,7 +2,7 @@
 
 ### before
 
-1.所有必选项如未填写，统一返回（之后省略s）：
+1.所有必选项如未填写，统一返回（之后省略）：
 
 ```json
 {
@@ -1154,15 +1154,372 @@ DELETE /auth/collection/delete/:user_id
 
 ### 生成订单
 
+**请求路径**
+
+```http
+POST /order/auth/add/:user_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称         | 位置  | 类型         | 必选 | 说明               |
+| ------------ | ----- | ------------ | ---- | ------------------ |
+| user_id      | path  | string       | 是   | 用户id             |
+| address_id   | query | string       | 是   | 地址id             |
+| pay_products | query | []string数组 | 是   | 订单内商品名的集合 |
+
+**返回参数**
+
+无
+
+**返回示例**
+
+| status | info                 | 说明                         |
+| ------ | -------------------- | ---------------------------- |
+| 200    | “gen order success”  | 生成订单成功                 |
+| 400    | "no product in cart" | 购物车中没有添加要结算的商品 |
+| 500    | "internal error"     | 数据库增删查改错误           |
+
+```json
+{
+    "status": 200,
+    "info": "gen order success"
+}
+```
+
 ### 结算订单
 
-### 查看订单
+**请求路径**
+
+```http
+POST /order/auth/settle/:user_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称           | 位置  | 类型   | 必选 | 说明              |
+| -------------- | ----- | ------ | ---- | ----------------- |
+| user_id        | path  | string | 是   | 用户id            |
+| order_id       | query | string | 是   | 订单id            |
+| payment        | query | float  | 是   | 支付金额(2位小数) |
+| payment_method | query | string | 是   | 支付方式          |
+
+**返回参数**
+
+无
+
+**返回示例**
+
+| status | info                  | 说明                   |
+| ------ | --------------------- | ---------------------- |
+| 200    | “settle bill success” | 结算订单成功           |
+| 400    | "balance not enough"  | 余额不足               |
+| 400    | "wrong payment"       | 支付金额不合法         |
+| 400    | "wrong total price"   | 支付金额与应付金额不等 |
+| 500    | "internal error"      | 数据库增删查改错误     |
+
+```json
+{
+    "status": 200,
+    "info": "settle bill success"
+}
+```
+
+### 查看所有订单
+
+**请求路径**
+
+```http
+GET /order/auth/view/:user_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称    | 位置 | 类型   | 必选 | 说明   |
+| ------- | ---- | ------ | ---- | ------ |
+| user_id | path | string | 是   | 用户id |
+
+**返回参数**
+
+| 字段名       | 类型         | 说明           |
+| ------------ | ------------ | -------------- |
+| order        | 复杂数据类型 | 订单的集合     |
+| order_detail | 复杂数据类型 | 订单明细的集合 |
+
+**返回示例**
+
+| status | info                 | 说明               |
+| ------ | -------------------- | ------------------ |
+| 200    | “view order success” | 查看收藏成功       |
+| 500    | "internal error"     | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "view order success",
+    "order": [
+        {
+            "order_id": "2",
+            "order_number": "1675523974c1d12fbb8d79c0cd4a70",
+            "order_time": "2023-02-04T23:19:35+08:00",
+            "status": "待支付",
+            "payment_method": "",
+            "payment_amount": 20350,
+            "payment_time": "0001-01-01T00:00:00Z",
+            "recipient_name": "小3",
+            "recipient_address": "江苏南京**街道",
+            "recipient_phone": "17723888866",
+            "user_id": "20"
+        },
+        {
+            "order_id": "3",
+            "order_number": "167557834539164d579eebb18a36e0",
+            "order_time": "2023-02-05T14:25:45+08:00",
+            "status": "待支付",
+            "payment_method": "",
+            "payment_amount": 20350,
+            "payment_time": "0001-01-01T00:00:00Z",
+            "recipient_name": "小3",
+            "recipient_address": "江苏南京**街道",
+            "recipient_phone": "17723888866",
+            "user_id": "20"
+        }
+    ],
+    "order_detail": [
+        [
+            {
+                "order_detail_id": "2",
+                "order_id": "2",
+                "name": "手机",
+                "quantity": "5",
+                "price": "20000.00"
+            },
+            {
+                "order_detail_id": "3",
+                "order_id": "2",
+                "name": "洗面奶",
+                "quantity": "5",
+                "price": "350.00"
+            }
+        ],
+        [
+            {
+                "order_detail_id": "4",
+                "order_id": "3",
+                "name": "手机",
+                "quantity": "5",
+                "price": "20000.00"
+            },
+            {
+                "order_detail_id": "5",
+                "order_id": "3",
+                "name": "洗面奶",
+                "quantity": "5",
+                "price": "350.00"
+            }
+        ]
+    ]
+}
+```
 
 ### 更新订单状态
 
-### 按订单状态分类
+**请求路径**
+
+```http
+PUT /order/auth/update/:order_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称     | 位置  | 类型   | 必选 | 说明             |
+| -------- | ----- | ------ | ---- | ---------------- |
+| order_id | path  | string | 是   | 订单id           |
+| status   | query | string | 是   | 改变后的订单状态 |
+
+**返回参数**
+
+无
+
+**返回示例**
+
+| status | info                          | 说明               |
+| ------ | ----------------------------- | ------------------ |
+| 200    | “update order status success” | 修改订单状态成功   |
+| 500    | "internal error"              | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "update order status success"
+}
+```
+
+### 按订单状态查看
+
+**请求路径**
+
+```http
+GET /order/auth/search/:user_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称    | 位置  | 类型   | 必选 | 说明     |
+| ------- | ----- | ------ | ---- | -------- |
+| user_id | path  | string | 是   | 用户id   |
+| status  | query | string | 是   | 订单状态 |
+
+**返回参数**
+
+| 字段名       | 类型         | 说明           |
+| ------------ | ------------ | -------------- |
+| order        | 复杂数据类型 | 订单的集合     |
+| order_detail | 复杂数据类型 | 订单明细的集合 |
+
+**返回示例**
+
+| status | info                   | 说明               |
+| ------ | ---------------------- | ------------------ |
+| 200    | “search order success” | 商品分类成功       |
+| 500    | "internal error"       | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "search order success",
+    "order": [
+        {
+            "order_id": "2",
+            "order_number": "1675523974c1d12fbb8d79c0cd4a70",
+            "order_time": "2023-02-04T23:19:35+08:00",
+            "status": "待支付",
+            "payment_method": "",
+            "payment_amount": 20350,
+            "payment_time": "0001-01-01T00:00:00Z",
+            "recipient_name": "小3",
+            "recipient_address": "江苏南京**街道",
+            "recipient_phone": "17723888866",
+            "user_id": "20"
+        },
+        {
+            "order_id": "3",
+            "order_number": "167557834539164d579eebb18a36e0",
+            "order_time": "2023-02-05T14:25:45+08:00",
+            "status": "待支付",
+            "payment_method": "",
+            "payment_amount": 20350,
+            "payment_time": "0001-01-01T00:00:00Z",
+            "recipient_name": "小3",
+            "recipient_address": "江苏南京**街道",
+            "recipient_phone": "17723888866",
+            "user_id": "20"
+        }
+    ],
+    "order_detail": [
+        [
+            {
+                "order_detail_id": "2",
+                "order_id": "2",
+                "name": "手机",
+                "quantity": "5",
+                "price": "20000.00"
+            },
+            {
+                "order_detail_id": "3",
+                "order_id": "2",
+                "name": "洗面奶",
+                "quantity": "5",
+                "price": "350.00"
+            }
+        ],
+        [
+            {
+                "order_detail_id": "4",
+                "order_id": "3",
+                "name": "手机",
+                "quantity": "5",
+                "price": "20000.00"
+            },
+            {
+                "order_detail_id": "5",
+                "order_id": "3",
+                "name": "洗面奶",
+                "quantity": "5",
+                "price": "350.00"
+            }
+        ]
+    ]
+}
+```
 
 ### 删除订单
+
+**请求路径**
+
+```http
+DELETE /order/auth/delete/:order_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称     | 位置 | 类型   | 必选 | 说明   |
+| -------- | ---- | ------ | ---- | ------ |
+| order_id | path | string | 是   | 订单id |
+
+**返回参数**
+
+无
+
+**返回示例**
+
+| status | info                   | 说明               |
+| ------ | ---------------------- | ------------------ |
+| 200    | “delete order success” | 删除订单成功       |
+| 500    | "internal error"       | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "delete order success"
+}
+```
 
 ## 店铺相关
 
@@ -1302,11 +1659,190 @@ POST /seller/auth/refresh
 
 ### 上架商品
 
+**请求路径**
+
+```http
+POST /seller/auth/add/:seller_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称      | 位置 | 类型   | 必选 | 说明          |
+| --------- | ---- | ------ | ---- | ------------- |
+| seller_id | path | string | 是   | 卖家id        |
+| name      | body | string | 是   | 商品名        |
+| price     | body | string | 是   | 商品价格      |
+| sales     | body | string | 是   | 商品销量      |
+| rating    | body | string | 是   | 商品评分      |
+| category  | body | string | 是   | 商品种类      |
+| image     | body | string | 否   | 商品图片`url` |
+
+**返回参数**
+
+无
+
+**返回示例**
+
+| status | info                  | 说明               |
+| ------ | --------------------- | ------------------ |
+| 200    | “add product success” | 上架商品成功       |
+| 400    | "invalid seller id"   | 卖家id不合法       |
+| 400    | "product has existed" | 商品重复添加       |
+| 500    | "internal error"      | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "add product success"
+}
+```
+
 ### 查看上架商品
+
+**请求路径**
+
+```http
+GET /seller/auth/view/:seller_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称      | 位置 | 类型   | 必选 | 说明   |
+| --------- | ---- | ------ | ---- | ------ |
+| seller_id | path | string | 是   | 卖家id |
+
+**返回参数**
+
+| 字段名  | 类型         | 说明               |
+| ------- | ------------ | ------------------ |
+| product | 复杂数据类型 | 搜索商品信息的集合 |
+
+**返回示例**
+
+| status | info                    | 说明               |
+| ------ | ----------------------- | ------------------ |
+| 200    | “view products success” | 查看上架商品成功   |
+| 500    | "internal error"        | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "view products success",
+    "product": [
+        {
+            "product_id": 14,
+            "seller_id": 3,
+            "seller": "小3",
+            "name": "羽毛球",
+            "price": "50.00",
+            "sales": "688",
+            "rating": "4.1",
+            "category": "体育类",
+            "image": " "
+        }
+    ]
+}
+```
 
 ### 修改商品信息
 
-### 删除商品
+**请求路径**
+
+```http
+PUT /seller/auth/update/:seller_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称      | 位置 | 类型   | 必选 | 说明          |
+| --------- | ---- | ------ | ---- | ------------- |
+| seller_id | path | string | 是   | 卖家id        |
+| name      | body | string | 是   | 商品名        |
+| price     | body | string | 否   | 商品价格      |
+| sales     | body | string | 否   | 商品销量      |
+| rating    | body | string | 否   | 商品评分      |
+| category  | body | string | 否   | 商品种类      |
+| image     | body | string | 否   | 商品图片`url` |
+
+**返回参数**
+
+无
+
+**返回示例**
+
+| status | info                     | 说明                 |
+| ------ | ------------------------ | -------------------- |
+| 200    | “update product success” | 修改商品信息成功     |
+| 400    | "unknown name"           | 商品名未输入         |
+| 400    | "invalid seller id"      | 卖家id不合法         |
+| 400    | "product not exist"      | 商品名不存在         |
+| 400    | "fail to update"         | 所有非必选项均未输入 |
+| 500    | "internal error"         | 数据库增删查改错误   |
+
+```json
+{
+    "status": 200,
+    "info": "update product success"
+}
+```
+
+### 下架商品
+
+**请求路径**
+
+```http
+DELETE /seller/auth/delete/:seller_id
+```
+
+**请求头**
+
+| 字段名        | 必选 | 类型          | 说明      |
+| ------------- | ---- | ------------- | --------- |
+| Authorization | 是   | Bearer $token | 验证token |
+
+**请求参数**
+
+| 名称      | 位置  | 类型   | 必选 | 说明   |
+| --------- | ----- | ------ | ---- | ------ |
+| seller_id | path  | string | 是   | 卖家id |
+| name      | query | string | 是   | 商品名 |
+
+**返回参数**
+
+无
+
+**返回示例**
+
+| status | info                     | 说明               |
+| ------ | ------------------------ | ------------------ |
+| 200    | “delete product success” | 下架商品成功       |
+| 400    | "product not exist"      | 商品名不存在       |
+| 500    | "internal error"         | 数据库增删查改错误 |
+
+```json
+{
+    "status": 200,
+    "info": "delete product success"
+}
+```
 
 ## 店铺详情相关
 
@@ -1552,7 +2088,7 @@ GET /announcement/view/:seller_id
 
 ## 复杂数据类型
 
-##### 搜索/分类商品信息的集合
+##### 搜索/分类/查看商品信息的集合
 
 | 名称       | 类型   | 说明          |
 | ---------- | ------ | ------------- |
@@ -1632,3 +2168,30 @@ GET /announcement/view/:seller_id
 | quantity   | string | 数量          |
 | price      | string | 商品总价      |
 | image      | string | 商品图片`url` |
+
+##### 订单的集合
+
+| 名称              | 类型   | 说明                                           |
+| ----------------- | ------ | ---------------------------------------------- |
+| order_id          | string | 订单id                                         |
+| order_number      | string | 订单号                                         |
+| order_time        | string | 下单时间                                       |
+| status            | string | 订单状态                                       |
+| payment_method    | string | 支付方式                                       |
+| payment_amount    | float  | 应付金额                                       |
+| payment_time      | string | 支付时间（ "0001-01-01T00:00:00Z" 表示未支付） |
+| recipient_name    | string | 收货人                                         |
+| recipient_address | string | 收货地址                                       |
+| recipient_phone   | string | 收货电话                                       |
+| user_id           | string | 用户id                                         |
+
+##### 订单明细的集合
+
+| 名称            | 类型   | 说明       |
+| --------------- | ------ | ---------- |
+| order_detail_id | string | 订单明细id |
+| order_id        | string | 订单id     |
+| name            | string | 商品名     |
+| quantity        | string | 购买数量   |
+| price           | string | 该商品总价 |
+

@@ -22,7 +22,7 @@ func Payment(userId string, payProducts []string) (totalPrice float64, err error
 
 func DeleteCartName(userId string, payProducts []string) (err error) {
 	for i := 0; i < len(payProducts); i++ {
-		_, err = DB.Exec("delete * from cart where user_id=? and name=? ", userId, payProducts[i])
+		_, err = DB.Exec("delete from cart where user_id=? and name=? ", userId, payProducts[i])
 		if err != nil {
 			return err
 		}
@@ -31,11 +31,20 @@ func DeleteCartName(userId string, payProducts []string) (err error) {
 }
 
 func SearchOrder(userId, status string) (orders []model.Order, err error) {
+	var paymentTime sql.NullString
 	var rows *sql.Rows
-	rows, err = DB.Query("select * from order where user_id=? and status=?", userId, status)
+	rows, err = DB.Query("select * from orders where user_id=? and status=?", userId, status)
 	var order model.Order
 	for rows.Next() {
-		err = rows.Scan(&order.OrderId, &order.OrderNumber, &order.OrderTime, &order.Status, &order.PaymentMethod, &order.PaymentAmount, &order.PaymentTime, &order.RecipientName, &order.RecipientAddress, &order.RecipientPhone)
+		err = rows.Scan(&order.OrderId, &order.OrderNumber, &order.OrderTime, &order.Status, &order.PaymentMethod, &order.PaymentAmount, &paymentTime, &order.RecipientName, &order.RecipientAddress, &order.RecipientPhone, &order.UserId)
+		if paymentTime.Valid {
+			order.PaymentTime, err = time.Parse("2006-01-02 15:04:05", paymentTime.String)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			order.PaymentTime = time.Time{}
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -45,11 +54,20 @@ func SearchOrder(userId, status string) (orders []model.Order, err error) {
 }
 
 func ViewOrder(userId string) (orders []model.Order, err error) {
+	var paymentTime sql.NullString
 	var rows *sql.Rows
-	rows, err = DB.Query("select * from order where user_id=?", userId)
+	rows, err = DB.Query("select * from orders where user_id=?", userId)
 	var order model.Order
 	for rows.Next() {
-		err = rows.Scan(&order.OrderId, &order.OrderNumber, &order.OrderTime, &order.Status, &order.PaymentMethod, &order.PaymentAmount, &order.PaymentTime, &order.RecipientName, &order.RecipientAddress, &order.RecipientPhone)
+		err = rows.Scan(&order.OrderId, &order.OrderNumber, &order.OrderTime, &order.Status, &order.PaymentMethod, &order.PaymentAmount, &paymentTime, &order.RecipientName, &order.RecipientAddress, &order.RecipientPhone, &order.UserId)
+		if paymentTime.Valid {
+			order.PaymentTime, err = time.Parse("2006-01-02 15:04:05", paymentTime.String)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			order.PaymentTime = time.Time{}
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -59,12 +77,12 @@ func ViewOrder(userId string) (orders []model.Order, err error) {
 }
 
 func UpdateOrderStatus(orderId, status string) (err error) {
-	_, err = DB.Exec("update order set status=? where order_id=?", status, orderId)
+	_, err = DB.Exec("update orders set status=? where order_id=?", status, orderId)
 	return
 }
 
 func UpdatePaymentMethodTime(orderId, paymentMethod string, paymentTime time.Time) (err error) {
-	_, err = DB.Exec("update order set payment_method=?,payment_time=? where order_id=?", paymentMethod, paymentTime, orderId)
+	_, err = DB.Exec("update orders set payment_method=?,payment_time=? where order_id=?", paymentMethod, paymentTime, orderId)
 	return
 }
 
@@ -78,12 +96,12 @@ func SearchCartInOrder(userId, name string) (cart model.Cart, err error) {
 }
 
 func InsertOrder(o model.Order) (err error) {
-	_, err = DB.Exec("insert into order (order_number,order_time,status,payment_method,payment_amount,payment_time,recipient_name,recipient_address,recipient_phone,user_id) values (?,?,?,?,?,?,?,?,?,?)", o.OrderNumber, o.OrderTime, o.Status, o.PaymentMethod, o.PaymentAmount, o.PaymentTime, o.RecipientName, o.RecipientAddress, o.RecipientPhone, o.UserId)
+	_, err = DB.Exec("insert into orders (order_number,order_time,status,payment_method,payment_amount,recipient_name,recipient_address,recipient_phone,user_id) values(?,?,?,?,?,?,?,?,?)", o.OrderNumber, o.OrderTime, o.Status, o.PaymentMethod, o.PaymentAmount, o.RecipientName, o.RecipientAddress, o.RecipientPhone, o.UserId)
 	return
 }
 
 func SearchOrderIdByNumber(orderNumber string) (orderId string, err error) {
-	row := DB.QueryRow("select order_id from order where order_number=?", orderNumber)
+	row := DB.QueryRow("select order_id from orders where order_number=?", orderNumber)
 	if err = row.Err(); err != nil {
 		return "", err
 	}
@@ -92,13 +110,13 @@ func SearchOrderIdByNumber(orderNumber string) (orderId string, err error) {
 }
 
 func InsertOrderDetail(orderId string, c model.Cart) (err error) {
-	_, err = DB.Exec("insert into order_detail (order_id,name,quantity,price) values (?,?,?,?)", orderId, c.Name, c.Quantity, c.Price)
+	_, err = DB.Exec("insert into orders_detail (order_id,name,quantity,price) values (?,?,?,?)", orderId, c.Name, c.Quantity, c.Price)
 	return
 }
 
 func SearchOrderDetailByOrderId(orderId string) (orderDetails []model.OrderDetail, err error) {
 	var rows *sql.Rows
-	rows, err = DB.Query("select * from order_detail where order_id=?", orderId)
+	rows, err = DB.Query("select * from orders_detail where order_id=?", orderId)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +132,7 @@ func SearchOrderDetailByOrderId(orderId string) (orderDetails []model.OrderDetai
 }
 
 func SearchTotalPriceById(orderId string) (totalPrice string, err error) {
-	row := DB.QueryRow("select payment_amount from order where order_id=?", orderId)
+	row := DB.QueryRow("select payment_amount from orders where order_id=?", orderId)
 	if err = row.Err(); err != nil {
 		return "", err
 	}
@@ -123,11 +141,11 @@ func SearchTotalPriceById(orderId string) (totalPrice string, err error) {
 }
 
 func DeleteOrder(orderId string) (err error) {
-	_, err = DB.Exec("delete * from order where order_id=?", orderId)
+	_, err = DB.Exec("delete from orders where order_id=?", orderId)
 	return
 }
 
 func DeleteOrderDetail(orderId string) (err error) {
-	_, err = DB.Exec("delete * from order_detail where order_id=?", orderId)
+	_, err = DB.Exec("delete from orders_detail where order_id=?", orderId)
 	return
 }

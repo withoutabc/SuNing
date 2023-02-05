@@ -2,10 +2,12 @@ package api
 
 import (
 	"crypto/rand"
+	"database/sql"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
+	"suning/dao"
 	"suning/model"
 	"suning/service"
 	"suning/util"
@@ -28,9 +30,14 @@ func GenOrder(c *gin.Context) {
 	//获取购物车信息
 	carts, err := service.SearchCartInOrder(userId, payProducts)
 	if err != nil {
-		fmt.Printf("search cart err:%v", err)
-		util.RespInternalErr(c)
-		return
+		if err == sql.ErrNoRows {
+			util.NormErr(c, 400, "no product in cart")
+			return
+		} else {
+			fmt.Printf("search cart err:%v", err)
+			util.RespInternalErr(c)
+			return
+		}
 	}
 	//删除购物车相应信息，获得总价
 	totalPrice, err := service.GenOrder(userId, payProducts)
@@ -40,7 +47,11 @@ func GenOrder(c *gin.Context) {
 		return
 	}
 	//获取地址
-	addressId := c.PostForm("address_id")
+	addressId := c.Query("address_id")
+	if addressId == "" {
+		util.RespParamErr(c)
+		return
+	}
 	address, err := service.SearchAddressById(addressId)
 	if err != nil {
 		fmt.Printf("search address err:%v", err)
@@ -64,7 +75,6 @@ func GenOrder(c *gin.Context) {
 		Status:           "待支付",
 		PaymentMethod:    "",
 		PaymentAmount:    totalPrice,
-		PaymentTime:      "",
 		RecipientName:    address.RecipientName,
 		RecipientAddress: address.Province + address.City + address.StateOrCommunity,
 		RecipientPhone:   address.RecipientPhone,
@@ -92,6 +102,7 @@ func GenOrder(c *gin.Context) {
 			return
 		}
 	}
+	util.RespOK(c, "gen order success")
 }
 
 // SettleBill 实现商品结算接口（付款）
@@ -123,6 +134,17 @@ func SettleBill(c *gin.Context) {
 		util.NormErr(c, 400, "wrong total price")
 		return
 	}
+	//检查金额是否足够
+	account, err := dao.SearchBalanceFromUserId(userId)
+	if err != nil {
+		fmt.Printf("search balance err:%v", err)
+		util.RespInternalErr(c)
+		return
+	}
+	if account.Balance < price {
+		util.NormErr(c, 400, "balance not enough")
+		return
+	}
 	//扣除余额
 	err = service.DecreaseBalance(userId, price)
 	if err != nil {
@@ -132,6 +154,10 @@ func SettleBill(c *gin.Context) {
 	}
 	//修改订单信息
 	paymentMethod := c.Query("payment_method") //支付方式
+	if paymentMethod == "" {
+		util.RespParamErr(c)
+		return
+	}
 	err = service.UpdateOrderStatus(orderId, "待收货")
 	if err != nil {
 		fmt.Printf("update status err:%v", err)
@@ -184,14 +210,8 @@ func SearchOrder(c *gin.Context) {
 
 // UpdateOrderStatus 实现改变订单状态接口
 func UpdateOrderStatus(c *gin.Context) {
-	//获取信息
-	userId := c.Param("user_id")
-	if userId == "" {
-		util.RespParamErr(c)
-		return
-	}
-	orderId := c.Query("order_id") //
-	status := c.Query("status")    //
+	orderId := c.Param("order_id")
+	status := c.Query("status")
 	if status == "" || orderId == "" {
 		util.RespParamErr(c)
 		return
@@ -237,13 +257,11 @@ func ViewOrder(c *gin.Context) {
 
 // DeleteOrder 删除订单
 func DeleteOrder(c *gin.Context) {
-	//获取信息
-	userId := c.Param("user_id")
-	if userId == "" {
+	orderId := c.Param("order_id")
+	if orderId == "" {
 		util.RespParamErr(c)
 		return
 	}
-	orderId := c.Query("order_id")
 	//删除
 	err := service.DeleteOrder(orderId)
 	if err != nil {
